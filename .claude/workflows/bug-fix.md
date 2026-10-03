@@ -57,7 +57,7 @@ Each stage follows the lifecycle in the [Workflow Specification](../../docs/work
 | 3 | Gather Evidence | 1, 2 | `bug-investigation-agent`; `observability` if logs or traces are needed | Labeled evidence: observed, assumed, missing | Evidence was supplied and is sufficient |
 | 4 | Investigate | 3 | `bug-investigation-agent` | Hypotheses with support and ways to test them | Never |
 | 5 | Confirm Root Cause | 4 | `bug-investigation-agent` | Confirmed cause, or "root cause not yet confirmed" | Never |
-| 6 | Plan Minimal Fix | 5 | Workflow with the investigation result | Smallest change that addresses the cause, risks, side effects | Never |
+| 6 | Plan Minimal Fix | 5 | Workflow with the investigation result; `change-intelligence-agent` (`/change-impact`) for the side effects of the fix when it touches shared code, a contract or data | Smallest change that addresses the cause, risks, side effects | Never |
 | 7 | Implement Fix | 6 | The engineer or the AI, with go-ahead | Working-tree change | Blocked until stage 5 is confirmed, unless stabilization applies |
 | 8 | Regression Test | 5, 7 | `test-planning-agent` (`/test-plan`); `testing` skill | A test that fails without the fix and passes with it | A test is genuinely impractical; say why and give manual verification |
 | 9 | Review | 7, 8 | `pr-review-agent` (`/review`) | Review findings | The fix is trivial and the user declines review |
@@ -68,6 +68,7 @@ Each stage follows the lifecycle in the [Workflow Specification](../../docs/work
 | Command | Serves stage |
 | --- | --- |
 | [`/debug`](../commands/debug.md) | 2-5 |
+| [`/change-impact`](../commands/change-impact.md) | 6 |
 | [`/test-plan`](../commands/test-plan.md) | 8 |
 | [`/review`](../commands/review.md) | 9 |
 
@@ -77,6 +78,7 @@ Each stage follows the lifecycle in the [Workflow Specification](../../docs/work
 | --- | --- | --- | --- |
 | [bug-investigation-agent](../agents/bug-investigation-agent.md) | Primary | 2-5 | Always |
 | [test-planning-agent](../agents/test-planning-agent.md) | Supporting | 8 | A regression test is planned |
+| [change-intelligence-agent](../agents/change-intelligence-agent.md) | Supporting | 6 | The fix touches shared code, a contract or data |
 | [pr-review-agent](../agents/pr-review-agent.md) | Supporting | 9 | The fix is reviewed |
 
 ## Skills
@@ -85,6 +87,7 @@ Applied through the agents above. None is required by the workflow itself.
 
 - [`debugging`](../skills/debugging/SKILL.md): through the primary agent.
 - [`testing`](../skills/testing/SKILL.md): regression test.
+- [`change-intelligence`](../skills/change-intelligence/SKILL.md): stage 6, through its agent, when the fix has wider reach.
 - [`observability`](../skills/observability/SKILL.md), [`database-sql`](../skills/database-sql/SKILL.md), [`performance`](../skills/performance/SKILL.md), [`security`](../skills/security/SKILL.md): only when the evidence points to them.
 - [`playwright`](../skills/playwright/SKILL.md): when the defect is in a browser flow.
 

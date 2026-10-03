@@ -28,10 +28,10 @@ Skills are selected by the agent and applied to the repository. Project Context 
 
 | Layer | Responsibility | Count | Specification | Registry |
 | --- | --- | --- | --- | --- |
-| Skill | A focused engineering capability | 12 | [Skill Specification](skill-specification.md) | [Skills](skills.md) |
-| Agent | Orchestrates skills around one engineering responsibility | 7 | [Agent Specification](agent-specification.md) | [Agent Registry](agent-registry.md) |
-| Command | A lightweight user-facing entry point to one agent | 7 | [Commands](commands.md) | [Command Registry](command-registry.md) |
-| Workflow | A repeatable multi-stage engineering process | 7 | [Workflow Specification](workflow-specification.md) | [Workflow Registry](workflow-registry.md) |
+| Skill | A focused engineering capability | 13 | [Skill Specification](skill-specification.md) | [Skills](skills.md) |
+| Agent | Orchestrates skills around one engineering responsibility | 9 | [Agent Specification](agent-specification.md) | [Agent Registry](agent-registry.md) |
+| Command | A lightweight user-facing entry point to one agent | 9 | [Commands](commands.md) | [Command Registry](command-registry.md) |
+| Workflow | A repeatable multi-stage engineering process | 8 | [Workflow Specification](workflow-specification.md) | [Workflow Registry](workflow-registry.md) |
 
 Each layer is defined once and reused by the layers above it. Lower layers do not know about higher ones.
 
@@ -44,6 +44,7 @@ Skills provide focused engineering capabilities. A skill explains how to do one 
 | Skill | Capability |
 | --- | --- |
 | `code-review` | Review changes and produce evidence-based findings |
+| `change-intelligence` | Analyze the impact of a change from repository evidence |
 | `debugging` | Investigate failures from symptom to confirmed cause |
 | `testing` | Plan, write and assess tests |
 | `playwright` | Browser and end-to-end tests |
@@ -71,6 +72,8 @@ An agent orchestrates skills around one specific engineering responsibility. It 
 | `api-development-agent` | Design, implement and evolve APIs | `api-development` |
 | `database-troubleshooting-agent` | Diagnose database problems and plan safe remediation | `database-sql` |
 | `production-incident-agent` | Stabilize and investigate production incidents | `debugging`, `observability`, `reliability` |
+| `change-intelligence-agent` | Report the impact, risks and validation needs of a change | `change-intelligence` |
+| `pr-intelligence-agent` | Decide whether a complete PR is ready, by orchestrating the relevant analyses | `code-review`, `change-intelligence` |
 
 Each agent's full skill set, including the skills selected by context, is in the [Agent Registry](agent-registry.md). A skill outside an agent's set is reached by a handoff or a direct request, and not assumed.
 
@@ -87,6 +90,8 @@ Commands are lightweight, user-facing entry points. A command passes the user's 
 | `/api` | `api-development-agent` |
 | `/database` | `database-troubleshooting-agent` |
 | `/incident` | `production-incident-agent` |
+| `/change-impact` | `change-intelligence-agent` |
+| `/pr-intelligence` | `pr-intelligence-agent` |
 
 A command never selects skills or runs a process of its own. No command starts a workflow yet. A future command may do so, and would stay thin.
 
@@ -103,6 +108,7 @@ Workflows represent repeatable, multi-stage engineering processes. They coordina
 | `pr-preparation` | A finished change prepared for PR |
 | `e2e-test-creation` | A reliable browser test, or a recommended lower-level test |
 | `production-incident` | A stabilized, explained and followed-up incident |
+| `pr-intelligence` | A readiness decision for a complete proposed change |
 
 Every stage follows the lifecycle *input, context, action, result, validation, decision, next stage*, and a stage can be completed, skipped, blocked or failed. Stages that do not apply are skipped and the reason is recorded. Workflows are started by asking for one by name, for example "run the bug-fix workflow".
 
@@ -124,6 +130,25 @@ Notes:
 - `templates/` holds the project context templates. `scripts/` holds the project context generator.
 
 Shared assets live at the top level: `docs/` and `evals/`.
+
+## Change and PR Intelligence
+
+Three capabilities work on a change, each with its own job:
+
+| Capability | Role |
+| --- | --- |
+| Code Review (`code-review`) | The detailed engineering review of a change |
+| Change Intelligence (`change-intelligence`) | Impact analysis: what a change affects, the risks, what to validate, what is unknown |
+| PR Intelligence (`pr-intelligence-agent`) | Orchestration and readiness: which analyses a PR needs, their combined findings, and a qualitative readiness of Ready, Needs Changes or Needs Information |
+
+```
+PR Intelligence
+ ├─ Change Intelligence   (impact)
+ ├─ Code Review           (detailed review)
+ └─ only the relevant: testing, security, API, database, performance, reliability, observability, architecture
+```
+
+PR Intelligence orchestrates. It adds no engineering rules, and it never approves, merges or changes anything. Change Intelligence is a skill with its own agent and command, and is also used inside existing workflow stages where a change spans several areas. Both are analysis only. See the [Change Intelligence Specification](change-intelligence-specification.md) and the [PR Intelligence Specification](pr-intelligence-specification.md).
 
 ## Project Context
 
@@ -188,7 +213,7 @@ The hub is evaluated at four levels, each independently.
 | Workflow evaluation | Does the workflow run the right stages, agents and gates, and skip the rest? | [`evals/workflows/`](../evals/workflows/README.md) |
 | Cross-layer integration evaluation | Does a real request produce the right routing, skills, process, safety behavior and validated output across all layers? | [`evals/integration/`](../evals/integration/README.md) |
 
-Commands have small routing evaluations in [`evals/commands/`](../evals/commands/README.md). The project context generator has its own cases in [`evals/project-context-generator/`](../evals/project-context-generator/README.md), and drift detection in [`evals/project-context-drift/`](../evals/project-context-drift/README.md). Outcomes everywhere are qualitative: Pass, Needs Improvement or Fail. There are no numeric scores. The current status of agents, commands and workflows is kept in their registries. Most evaluation cases have not been run yet, and the registries say so.
+Commands have small routing evaluations in [`evals/commands/`](../evals/commands/README.md). Change intelligence has [`evals/change-intelligence/`](../evals/change-intelligence/README.md), and PR intelligence has [`evals/pr-intelligence/`](../evals/pr-intelligence/README.md). The project context generator has its own cases in [`evals/project-context-generator/`](../evals/project-context-generator/README.md), and drift detection in [`evals/project-context-drift/`](../evals/project-context-drift/README.md). Outcomes everywhere are qualitative: Pass, Needs Improvement or Fail. There are no numeric scores. The current status of agents, commands and workflows is kept in their registries. Most evaluation cases have not been run yet, and the registries say so.
 
 ## Safety Model
 
@@ -309,5 +334,6 @@ evals/       skill, agents/, commands/, workflows/ and integration/ evaluations
 | Agents | [Agent Specification](agent-specification.md), [Agent Registry](agent-registry.md), [Agent Evaluation Matrix](agent-evaluation-matrix.md) |
 | Commands | [Commands](commands.md), [Command Registry](command-registry.md) |
 | Workflows | [Workflow Specification](workflow-specification.md), [Workflow Registry](workflow-registry.md), [Workflows](workflows.md) |
+| Change and PR analysis | [Change Intelligence Specification](change-intelligence-specification.md), [PR Intelligence Specification](pr-intelligence-specification.md) |
 | Project context | [Project Context Specification](project-context-specification.md), [Project Context](project-context.md), [Generator Specification](project-context-generator-specification.md), [Drift Specification](project-context-drift-specification.md), [Registry](project-context-registry.md), [Template](../templates/project-context/PROJECT-CONTEXT.md) |
 | Evaluation | [Evaluation suite](../evals/README.md), [Integration evaluations](../evals/integration/README.md) |

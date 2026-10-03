@@ -55,7 +55,7 @@ Each stage follows the lifecycle in the [Workflow Specification](../../docs/work
 | 1 | Requirement | | Workflow (asks the user) | Outcome, consumers, constraints | Never |
 | 2 | Existing API Analysis | 1 | `api-development-agent` (`/api`) | Current contract, conventions, consumers found | New API in an area with no existing API |
 | 3 | Contract Design | 1, 2 | `api-development-agent` | Proposed contract: resources, methods, schemas, errors | Never |
-| 4 | Compatibility Assessment | 2, 3 | `api-development-agent` | Breaking/non-breaking classification, versioning or migration approach | Brand-new API with no consumers |
+| 4 | Compatibility Assessment | 2, 3 | `api-development-agent`; `change-intelligence-agent` (`/change-impact`) for dependents and consumers found in the repository | Breaking/non-breaking classification, versioning or migration approach | Brand-new API with no consumers |
 | 5 | Security Assessment | 3 | `security` skill via `api-development-agent` | Authentication, authorization and data exposure findings | Never for state-changing or data-returning endpoints; skip for an internal change that touches no access or data |
 | 6 | Persistence Assessment | 3 | `database-troubleshooting-agent` (`/database`) | Schema and query impact | The API change does not touch storage |
 | 7 | Implementation | 3-6 | The engineer or the AI, with go-ahead | Working-tree changes | Never |
@@ -71,6 +71,7 @@ Stage 4 may force a return to stage 3 if the design is breaking and a compatible
 | Command | Serves stage |
 | --- | --- |
 | [`/api`](../commands/api.md) | 2-5 |
+| [`/change-impact`](../commands/change-impact.md) | 4 |
 | [`/database`](../commands/database.md) | 6 |
 | [`/test-plan`](../commands/test-plan.md) | 8 |
 | [`/review`](../commands/review.md) | 10 |
@@ -82,6 +83,7 @@ Stage 4 may force a return to stage 3 if the design is breaking and a compatible
 | [api-development-agent](../agents/api-development-agent.md) | Primary | 2-5, 7 | Always |
 | [architecture-agent](../agents/architecture-agent.md) | Supporting | 3, 4 | The change crosses service boundaries or introduces an integration pattern |
 | [database-troubleshooting-agent](../agents/database-troubleshooting-agent.md) | Supporting | 6 | The change touches persistence |
+| [change-intelligence-agent](../agents/change-intelligence-agent.md) | Supporting | 4 | Consumers, generated clients or dependent code must be located to judge compatibility |
 | [test-planning-agent](../agents/test-planning-agent.md) | Supporting | 8 | Always for behavior changes |
 | [pr-review-agent](../agents/pr-review-agent.md) | Supporting | 10 | Always |
 
@@ -91,6 +93,7 @@ Applied through the agents above.
 
 - [`api-development`](../skills/api-development/SKILL.md): through the primary agent.
 - [`security`](../skills/security/SKILL.md): stage 5.
+- [`change-intelligence`](../skills/change-intelligence/SKILL.md): stage 4, through its agent. Consumers it cannot find are reported as unknown.
 - [`database-sql`](../skills/database-sql/SKILL.md): stage 6, through the database agent.
 - [`testing`](../skills/testing/SKILL.md), [`code-review`](../skills/code-review/SKILL.md): stages 8 and 10.
 - [`performance`](../skills/performance/SKILL.md), [`reliability`](../skills/reliability/SKILL.md): only if the requirement names latency, volume, retries or idempotency concerns.

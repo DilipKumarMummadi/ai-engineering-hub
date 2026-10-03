@@ -24,8 +24,10 @@ Statuses are qualitative. There are no scores or rankings.
 | `/api` | [`.claude/commands/api.md`](../.claude/commands/api.md) | [`.github/prompts/api.prompt.md`](../.github/prompts/api.prompt.md) | api-development-agent | Design, implement, review or evolve an API | In Progress |
 | `/database` | [`.claude/commands/database.md`](../.claude/commands/database.md) | [`.github/prompts/database.prompt.md`](../.github/prompts/database.prompt.md) | database-troubleshooting-agent | Investigate or design database and SQL behavior | In Progress |
 | `/incident` | [`.claude/commands/incident.md`](../.claude/commands/incident.md) | [`.github/prompts/incident.prompt.md`](../.github/prompts/incident.prompt.md) | production-incident-agent | Investigate an active or recent production incident | In Progress |
+| `/change-impact` | [`.claude/commands/change-impact.md`](../.claude/commands/change-impact.md) | [`.github/prompts/change-impact.prompt.md`](../.github/prompts/change-impact.prompt.md) | change-intelligence-agent | Analyze the engineering impact of a change | In Progress |
+| `/pr-intelligence` | [`.claude/commands/pr-intelligence.md`](../.claude/commands/pr-intelligence.md) | [`.github/prompts/pr-intelligence.prompt.md`](../.github/prompts/pr-intelligence.prompt.md) | pr-intelligence-agent | Assess whether a PR or change is ready | In Progress |
 
-All seven commands are In Progress because none of their evaluation cases has been run yet. Evaluation cases are in [`evals/commands/`](../evals/commands/README.md).
+All nine commands are In Progress because none of their evaluation cases has been run yet. Evaluation cases for the first seven are in [`evals/commands/`](../evals/commands/README.md). `/change-impact` and `/pr-intelligence` have no separate routing cases yet. They are exercised through [`evals/change-intelligence/`](../evals/change-intelligence/README.md) and [`evals/pr-intelligence/`](../evals/pr-intelligence/README.md).
 
 ## Adding or Changing a Command
 

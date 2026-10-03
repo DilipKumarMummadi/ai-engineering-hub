@@ -57,7 +57,7 @@ Each stage follows the lifecycle in the [Workflow Specification](../../docs/work
 | 2 | Schema Analysis | 1 | `database-troubleshooting-agent` (`/database`) | Current structure, constraints, dependencies | Never |
 | 3 | Existing Data Analysis | 2 | `database-troubleshooting-agent` (read-only queries) | Data shape, nulls, duplicates, volume, risks for the change | New empty table or column with no existing data |
 | 4 | Migration Design | 2, 3 | `database-troubleshooting-agent` | Migration steps, ordering, compatibility with running code | Never |
-| 5 | Query / Code Impact | 4 | Repository reading; `api-development-agent` if an API is affected | Affected queries, models and consumers | The change is isolated and no code uses the object |
+| 5 | Query / Code Impact | 4 | Repository reading; `change-intelligence-agent` (`/change-impact`) for callers, consumers and tests of the changed objects; `api-development-agent` if an API is affected | Affected queries, models and consumers | The change is isolated and no code uses the object |
 | 6 | Performance Assessment | 4, 5 | `database-sql` and `performance` skills via the agent | Index, lock and plan implications | Small tables and no new query patterns |
 | 7 | Transaction / Concurrency Assessment | 4, 5 | `database-troubleshooting-agent` | Locking, isolation and deploy-time concurrency risks | A single additive change with no concurrent writers at risk |
 | 8 | Security Assessment | 4 | `security` skill | Permissions, exposure, sensitive-data findings | The change touches no sensitive data, permissions or access paths |
@@ -74,6 +74,7 @@ Execution against a shared or production database is **not a stage of this workf
 | --- | --- |
 | [`/database`](../prompts/database.prompt.md) | 2-4, 7, 11 |
 | [`/api`](../prompts/api.prompt.md) | 5, when an API is affected |
+| [`/change-impact`](../prompts/change-impact.prompt.md) | 5 |
 | [`/test-plan`](../prompts/test-plan.prompt.md) | 10 |
 | [`/review`](../prompts/review.prompt.md) | 12 |
 
@@ -84,6 +85,7 @@ Execution against a shared or production database is **not a stage of this workf
 | [database-troubleshooting-agent](../agents/database-troubleshooting-agent.md) | Primary | 2-4, 6, 7, 11 | Always |
 | [architecture-agent](../agents/architecture-agent.md) | Supporting | 4 | The change affects service ownership of data, replication or multi-service consistency |
 | [api-development-agent](../agents/api-development-agent.md) | Supporting | 5 | An API exposes the changed data |
+| [change-intelligence-agent](../agents/change-intelligence-agent.md) | Supporting | 5 | Callers, consumers or tests of the changed objects must be located |
 | [test-planning-agent](../agents/test-planning-agent.md) | Supporting | 10 | Always |
 | [pr-review-agent](../agents/pr-review-agent.md) | Supporting | 12 | Always |
 
@@ -93,6 +95,7 @@ Applied through the agents above.
 
 - [`database-sql`](../skills/database-sql/SKILL.md): through the primary agent.
 - [`performance`](../skills/performance/SKILL.md): stage 6, when volume or query patterns make it relevant.
+- [`change-intelligence`](../skills/change-intelligence/SKILL.md): stage 5, through its agent.
 - [`security`](../skills/security/SKILL.md): stage 8.
 - [`reliability`](../skills/reliability/SKILL.md): stages 7 and 11, for deployment ordering, backup and recovery.
 - [`testing`](../skills/testing/SKILL.md), [`code-review`](../skills/code-review/SKILL.md): stages 10 and 12.

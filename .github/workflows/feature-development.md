@@ -56,7 +56,7 @@ Each stage follows the lifecycle in the [Workflow Specification](../../docs/work
 | 1 | Understand Requirement | | Workflow (asks the user) | Stated outcome, constraints, acceptance criteria, open questions | Never |
 | 2 | Analyze Existing System | 1 | Repository reading; `architecture-agent` if structure is unclear | Current-state summary: affected areas, conventions, dependencies | The feature is self-contained and the area is already understood |
 | 3 | Architecture Assessment | 1, 2 | `architecture-agent` (`/architecture`) | Design decision, boundaries, trade-offs | The feature fits existing structure with no new component, boundary or integration |
-| 4 | Implementation Planning | 1-3 | `api-development-agent` (`/api`) if an API changes; otherwise Workflow | Ordered change plan, files affected, risks | Never for multi-file work; a one-step change needs only a sentence |
+| 4 | Implementation Planning | 1-3 | `api-development-agent` (`/api`) if an API changes; `change-intelligence-agent` (`/change-impact`) to assess the impact of the planned change when it spans several areas; otherwise Workflow | Ordered change plan, files affected, risks | Never for multi-file work; a one-step change needs only a sentence |
 | 5 | Implementation | 4 | The engineer or the AI, with user go-ahead; `refactoring` only if needed to make room | Working-tree changes | Never |
 | 6 | Testing | 1, 4, 5 | `test-planning-agent` (`/test-plan`); `testing` skill; `playwright` for browser flows | Test plan, tests added or updated, test run output | Never for behavior changes |
 | 7 | Security Review Where Relevant | 5 | `security` skill | Security findings or a statement that nothing applies | The feature touches no auth, input, data exposure, secrets or trust boundary |
@@ -72,6 +72,7 @@ Stages run in order unless a decision point changes the path. Findings from stag
 | --- | --- |
 | [`/architecture`](../prompts/architecture.prompt.md) | 3 |
 | [`/api`](../prompts/api.prompt.md) | 4 |
+| [`/change-impact`](../prompts/change-impact.prompt.md) | 4 |
 | [`/test-plan`](../prompts/test-plan.prompt.md) | 6 |
 | [`/review`](../prompts/review.prompt.md) | 8 |
 
@@ -82,6 +83,7 @@ Stages run in order unless a decision point changes the path. Findings from stag
 | [architecture-agent](../agents/architecture-agent.md) | Supporting | 2, 3 | New component, boundary, integration or non-trivial design choice |
 | [api-development-agent](../agents/api-development-agent.md) | Supporting | 4 | The feature adds or changes an API |
 | [test-planning-agent](../agents/test-planning-agent.md) | Supporting | 6 | The feature changes behavior |
+| [change-intelligence-agent](../agents/change-intelligence-agent.md) | Supporting | 4 | The planned change spans several areas or touches a contract, data or shared code |
 | [pr-review-agent](../agents/pr-review-agent.md) | Supporting | 8, 10 | Always, before the change is proposed |
 
 There is no single primary agent. The workflow is the orchestrator.
@@ -95,6 +97,7 @@ Applied through the agents above, or directly when no agent fits the stage. None
 - [`performance`](../skills/performance/SKILL.md): when the feature has a latency, volume or resource requirement.
 - [`refactoring`](../skills/refactoring/SKILL.md): only when existing structure blocks the feature. Kept separate from feature changes.
 - [`playwright`](../skills/playwright/SKILL.md): when a user flow needs a browser test.
+- [`change-intelligence`](../skills/change-intelligence/SKILL.md): stage 4, through its agent, when the planned change crosses areas.
 
 ## Decision Points
 

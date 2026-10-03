@@ -49,7 +49,7 @@ Each stage follows the lifecycle in the [Workflow Specification](../../docs/work
 
 | # | Stage | Needs | Performed by | Produces | Skip when |
 | --- | --- | --- | --- | --- | --- |
-| 1 | Understand Change | | Workflow; repository reading | Intent, scope, areas touched, change categories | Never |
+| 1 | Understand Change | | Workflow; repository reading; `change-intelligence-agent` (`/change-impact`) when the change spans more than one area or touches a contract, data or configuration | Intent, scope, areas touched, change categories, impact and validation needs | Never (the agent is skipped for a single-area change with no contract, data or configuration effect) |
 | 2 | Review Diff | 1 | `pr-review-agent` (`/review`) | Prioritized findings on the change | Never |
 | 3 | Check Tests | 1, 2 | `testing` skill; `test-planning-agent` (`/test-plan`) if gaps are found | Coverage assessment, gaps, test run results | Documentation-only change |
 | 4 | Review Security | 1 | `security` skill via `pr-review-agent` | Security findings | The change touches no auth, input, data, secrets or dependencies |
@@ -68,6 +68,7 @@ Stages 3-7 are independent of each other and may run in any order. Findings that
 | --- | --- |
 | [`/review`](../prompts/review.prompt.md) | 2, 4, 5, 10 |
 | [`/test-plan`](../prompts/test-plan.prompt.md) | 3 |
+| [`/change-impact`](../prompts/change-impact.prompt.md) | 1 |
 | [`/architecture`](../prompts/architecture.prompt.md) | 6 |
 
 ## Agents
@@ -77,6 +78,7 @@ Stages 3-7 are independent of each other and may run in any order. Findings that
 | [pr-review-agent](../agents/pr-review-agent.md) | Primary | 2, 4, 5, 10 | Always |
 | [test-planning-agent](../agents/test-planning-agent.md) | Supporting | 3 | Tests are missing or weak |
 | [architecture-agent](../agents/architecture-agent.md) | Supporting | 6 | The change crosses boundaries or alters structure |
+| [change-intelligence-agent](../agents/change-intelligence-agent.md) | Supporting | 1 | The change spans several areas or touches a contract, data or configuration |
 
 ## Skills
 
@@ -87,6 +89,7 @@ Applied through the agents above. None is required for every change.
 - [`security`](../skills/security/SKILL.md): stage 4.
 - [`performance`](../skills/performance/SKILL.md): stage 5.
 - [`architecture`](../skills/architecture/SKILL.md): stage 6.
+- [`change-intelligence`](../skills/change-intelligence/SKILL.md): stage 1, through its agent. Its impact findings decide which of stages 3-6 run.
 
 ## Decision Points
 
@@ -96,6 +99,7 @@ Applied through the agents above. None is required for every change.
 | The change touches auth, input handling, secrets or dependencies | Run stage 4 |
 | The change touches queries, loops over data, caching or resource use | Run stage 5 |
 | The change adds a component, boundary or integration | Run stage 6 |
+| The change spans several areas | Use `change-intelligence-agent` in stage 1, and let its impact findings decide which of stages 3-6 run |
 | The change includes a schema or migration | Confirm it followed [database-change](database-change.md); otherwise route there |
 | The change alters an API | Confirm it followed [api-change](api-change.md); otherwise route there |
 | Tests are missing for behavior changes | Report the gap; offer `test-planning-agent` |

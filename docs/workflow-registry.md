@@ -26,10 +26,13 @@ Statuses are qualitative. There are no scores or rankings.
 | [pr-preparation](../.claude/workflows/pr-preparation.md) | Prepare a finished change for PR with only the reviews it needs | pr-review-agent | test-planning-agent, architecture-agent | `/review`, `/test-plan`, `/architecture` | [`evals/workflows/pr-preparation/`](../evals/workflows/pr-preparation/README.md) | In Progress |
 | [e2e-test-creation](../.claude/workflows/e2e-test-creation.md) | Create a reliable browser E2E test, or recommend a lower test level | test-planning-agent | bug-investigation-agent, pr-review-agent | `/test-plan`, `/debug` | [`evals/workflows/e2e-test-creation/`](../evals/workflows/e2e-test-creation/README.md) | In Progress |
 | [production-incident](../.claude/workflows/production-incident.md) | Respond to a production incident from detection to prevention, stabilization first | production-incident-agent | bug-investigation-agent, database-troubleshooting-agent, architecture-agent | `/incident`, `/debug`, `/database`, `/architecture` | [`evals/workflows/production-incident/`](../evals/workflows/production-incident/README.md) | In Progress |
+| [pr-intelligence](../.claude/workflows/pr-intelligence.md) | Assess whether a complete proposed change is ready for review or merge, analysis only | pr-intelligence-agent | test-planning-agent | `/pr-intelligence`, `/test-plan` | [`evals/pr-intelligence/`](../evals/pr-intelligence/README.md) | In Progress |
 
 Each workflow also has a Project Context section, following [Project Context Consumption](project-context-consumption.md). It names where context helps and adds no stage.
 
-All seven workflows are In Progress because none of their evaluation cases has been run yet.
+All eight workflows are In Progress because none of their evaluation cases has been run yet.
+
+`change-intelligence-agent` (`/change-impact`) is also used inside existing stages, where the change spans several areas: stage 1 of pr-preparation, stage 4 of feature-development and api-change, stage 5 of database-change, and stage 6 of bug-fix. It adds no stage.
 
 ## Relationships
 
@@ -49,6 +52,8 @@ Workflows may hand work to each other. These are possible routes, not required c
 | e2e-test-creation | bug-fix | The test exposes a product defect |
 | | pr-preparation | The test is finished |
 | production-incident | bug-fix, database-change | The fix after stabilization |
+| pr-preparation | pr-intelligence | An independent readiness view is wanted |
+| pr-intelligence | pr-preparation | The author still needs the PR prepared |
 
 ## Adding or Changing a Workflow
 
