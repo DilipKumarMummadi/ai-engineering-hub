@@ -1,95 +1,62 @@
 # AI Engineering Hub
 
-A centralized repository of reusable AI engineering capabilities for software engineers.
+Reusable AI engineering skills, agents, commands and workflows for software engineers, distributable as an [Agent Plugins](https://agent-plugins.org) 1.0.0 plugin (`ai-engineering-hub`). The same repository also works directly, without installing the plugin.
 
-> **Status:** Foundation only. This version establishes the repository structure and documents the intended architecture. No skills, agents, commands, or workflows exist yet. They will be added incrementally.
+## Capabilities
 
-## Purpose
+| Capability | Where | Portable plugin content |
+| --- | --- | --- |
+| **Skills** (13): code-review, debugging, testing, playwright, refactoring, architecture, api-development, database-sql, security, performance, observability, reliability, change-intelligence | `skills/` | Yes |
+| **Agents** (9): PR review, PR intelligence, bug investigation, change intelligence, test planning, API development, architecture, database troubleshooting, production incident | `.claude/agents/`, `.github/agents/` | No (client-specific) |
+| **Commands**: review, debug, test-plan, architecture, api, database, incident, change-impact, pr-intelligence | `.claude/commands/`, `.github/prompts/` | No |
+| **Workflows**: feature-development, bug-fix, api-change, database-change, pr-preparation, e2e-test-creation, production-incident, pr-intelligence | `.claude/workflows/`, `.github/workflows/` | No |
+| **Project Context**: specification, generator and drift detection | `docs/`, `scripts/project-context/`, `templates/project-context/` | Spec and template only |
+| **Evals** | `evals/` | No (Hub development) |
 
-The hub will eventually provide:
-
-- **AI Skills**: reusable capabilities for specific engineering tasks
-- **AI Agents**: role-based AI workers
-- **Commands**: developer-facing entry points
-- **Engineering Workflows**: multi-step engineering processes
-- **Engineering Rules**: standards and constraints
-- **Templates**: reusable engineering artifacts
-- **Evaluations**: quality and regression tests for AI capabilities
-- **Tool/MCP integrations**
-
-It is intended to support:
-
-- Claude Code
-- GitHub Copilot
-- Future AI coding tools where practical
-
-## Core Philosophy
-
-| Concept | Meaning |
-| --- | --- |
-| **Skills** | Reusable capabilities |
-| **Agents** | Role-based AI workers |
-| **Commands** | Developer-facing entry points |
-| **Workflows** | Multi-step engineering processes |
-| **Rules** | Engineering standards and constraints |
-| **Templates** | Reusable engineering artifacts |
-| **Evals** | Quality and regression testing for AI capabilities |
-
-See [docs/architecture.md](docs/architecture.md) for details.
-
-## Architecture
-
-```
-AI Engineering Hub
-        |
-        +-- Skills
-        |
-        +-- Agents
-        |
-        +-- Commands
-        |
-        +-- Workflows
-        |
-        +-- Rules
-        |
-        +-- Templates
-        |
-        +-- Evals
-        |
-        +-- Tool Integrations
-        |
-        +-- Claude Code
-        |
-        +-- GitHub Copilot
-```
-
-## Repository Layout
+## Plugin Structure
 
 ```
 ai-engineering-hub/
-├── .claude/        # Claude Code native config (skills, agents, commands)
-├── .github/        # GitHub Copilot native config (skills, agents, instructions, prompts)
-├── .agents/        # Tool-neutral skills location
-├── docs/           # Architecture and design documentation
-├── templates/      # Reusable engineering artifact templates
-├── evals/          # Evaluations for AI capabilities
-├── scripts/        # Tooling and automation
+├── plugin.json              # Agent Plugins 1.0.0 manifest (core fields only)
 ├── README.md
-├── CONTRIBUTING.md
-└── CHANGELOG.md
+├── skills/<name>/SKILL.md   # portable skills (copy of .claude/skills, validator-enforced)
+├── com.github.copilot/      # Copilot namespace (documentation only for now)
+├── docs/                    # specifications, including plugin-architecture.md
+├── .claude/  .github/       # native Claude Code / Copilot resources (unchanged)
+└── evals/  scripts/  templates/   # Hub development tooling, not plugin runtime content
 ```
 
-Platform-specific configuration lives in each platform's native directory. Empty directories are preserved with `.gitkeep` files.
+See [Plugin Architecture](docs/plugin-architecture.md) and the general [Architecture](docs/architecture.md).
+
+## Install and Use
+
+- **Agent Plugins clients:** install the plugin from this repository (`https://github.com/DilipKumarMummadi/ai-engineering-hub`); the client discovers `skills/*/SKILL.md`.
+- **Claude Code / GitHub Copilot, directly:** clone the repository. `.claude/` and `.github/` are used natively, including agents, commands and workflows.
+
+## Project Context
+
+`PROJECT-CONTEXT.md` describes one repository, so it is never part of the plugin. Generate it in the repository where you use the Hub (`scripts/project-context/`, template in `templates/project-context/`); agents read it as orientation, not authority. See [Project Context](docs/project-context.md).
+
+## Security Model
+
+Skills are instructions only; the package ships no executable code, credentials or MCP servers. The validator rejects secret-like content, `PROJECT-CONTEXT.md`, evals and scripts in packaged directories. Agents are read-only or recommend-only by design.
+
+## Limitations
+
+- Agents, commands and workflows are not yet portable plugin components (see [Plugin Architecture](docs/plugin-architecture.md)).
+- `skills/` is a generated copy of `.claude/skills/`; run `python3 scripts/validate-plugin/validate_plugin.py --sync` after editing skills.
+- Installing from the repository clones development tooling too; the manifest only exposes `skills/`.
+- No `license` field or LICENSE file yet; one must be chosen by the owner.
+- MCP integration is not implemented.
+
+## Validation
+
+```
+python3 scripts/validate-plugin/validate_plugin.py
+python3 scripts/validate-plugin/test_validate_plugin.py
+python3 scripts/validate-hub/validate_hub.py
+```
 
 ## Documentation
 
-- [Architecture](docs/architecture.md)
-- [Skills](docs/skills.md)
-- [Agents](docs/agents.md)
-- [Workflows](docs/workflows.md)
-- [Contributing](CONTRIBUTING.md)
-- [Changelog](CHANGELOG.md)
-
-## Roadmap
-
-The repository is built incrementally. The current version only establishes the foundation; capabilities will be added one at a time, each documented and evaluated.
+[Architecture](docs/architecture.md) · [Plugin Architecture](docs/plugin-architecture.md) · [Skills](docs/skills.md) · [Agents](docs/agents.md) · [Workflows](docs/workflows.md) · [Contributing](CONTRIBUTING.md) · [Changelog](CHANGELOG.md)

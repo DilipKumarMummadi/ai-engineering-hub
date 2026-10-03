@@ -1,0 +1,24 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "ai-engineering-hub",
+  "version": "1.0.0",
+  "description": "Reusable AI engineering skills for software development: code review, debugging, testing, architecture, API, database, security, performance, observability, reliability and change intelligence.",
+  "author": {
+    "name": "Dilip Kumar Mummadi"
+  },
+  "homepage": "https://github.com/DilipKumarMummadi/ai-engineering-hub",
+  "repository": "https://github.com/DilipKumarMummadi/ai-engineering-hub",
+  "keywords": [
+    "ai-engineering",
+    "software-engineering",
+    "skills",
+    "agents",
+    "code-review",
+    "debugging",
+    "testing",
+    "architecture",
+    "playwright",
+    "dotnet",
+    "react"
+  ]
+}
