@@ -32,6 +32,18 @@ Produce an end-to-end test that earns its cost: it covers a flow that needs a re
 | Test data availability and reset method | Preferred | |
 | Constraints: environments, browsers, CI limits | Optional | Carried unchanged into every stage. |
 
+## Project Context
+
+Follow [Project Context Consumption](../../docs/project-context-consumption.md). Context is consumed where it changes what a stage does. This workflow adds no context-loading stage. The agent performing the stage loads what it needs, and later stages reuse it.
+
+```
+User Flow → Project Context → Preconditions → Locators and Data → Implementation → Run → Stabilize
+```
+
+Stages 1-3 use the frontend, testing and E2E setup, and build and run commands. Stage 8 uses how to start the application. Confirm the E2E tool from its configuration file.
+
+The workflow does not assume the context is current. If it is missing, the workflow proceeds from repository evidence. Stale or conflicting context is reported when it affects the outcome. Secrets in a context are never reproduced.
+
 ## Stages
 
 Each stage follows the lifecycle in the [Workflow Specification](../../docs/workflow-specification.md).

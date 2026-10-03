@@ -31,6 +31,18 @@ Take a completed change to a reviewable, honestly described PR. The workflow app
 | PR template and conventions | Gathered | From the repository. |
 | Constraints: reviewers, scope, release timing | Optional | Carried unchanged into every stage. |
 
+## Project Context
+
+Follow [Project Context Consumption](../../docs/project-context-consumption.md). Context is consumed where it changes what a stage does. This workflow adds no context-loading stage. The agent performing the stage loads what it needs, and later stages reuse it.
+
+```
+Change → Project Context (as needed) → Review → Validation → Summary
+```
+
+Stages 2 and 6 use conventions and architecture for review. Stage 8 uses build and run commands for validation. Skip loading context for a small change that needs none.
+
+The workflow does not assume the context is current. If it is missing, the workflow proceeds from repository evidence. Stale or conflicting context is reported when it affects the outcome. Secrets in a context are never reproduced.
+
 ## Stages
 
 Each stage follows the lifecycle in the [Workflow Specification](../../docs/workflow-specification.md).

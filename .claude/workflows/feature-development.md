@@ -35,6 +35,18 @@ Take a new feature from a stated requirement to a validated, reviewable change. 
 
 Missing inputs are identified and asked about, not invented. The workflow proceeds with what can be done safely.
 
+## Project Context
+
+Follow [Project Context Consumption](../../docs/project-context-consumption.md). Context is consumed where it changes what a stage does. This workflow adds no context-loading stage. The agent performing the stage loads what it needs, and later stages reuse it.
+
+```
+Requirement → Project Context → Existing System → Architecture → Implementation → Testing → Review
+```
+
+Stage 2 (Analyze Existing System) uses architecture, repository structure, technology and conventions to find what the feature touches. Stage 4 uses API and database conventions. Stage 6 uses the testing approach and build and run commands.
+
+The workflow does not assume the context is current. If it is missing, the workflow proceeds from repository evidence. Stale or conflicting context is reported when it affects the outcome. Secrets in a context are never reproduced.
+
 ## Stages
 
 Each stage follows the lifecycle in the [Workflow Specification](../../docs/workflow-specification.md): input, context, action, result, validation, decision, next stage.

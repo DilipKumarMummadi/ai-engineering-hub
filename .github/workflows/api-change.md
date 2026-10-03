@@ -34,6 +34,18 @@ Deliver an API addition or change with a deliberate contract, a compatibility de
 
 Unknown consumers are reported as unknown, not assumed to be absent.
 
+## Project Context
+
+Follow [Project Context Consumption](../../docs/project-context-consumption.md). Context is consumed where it changes what a stage does. This workflow adds no context-loading stage. The agent performing the stage loads what it needs, and later stages reuse it.
+
+```
+Requirement → Project Context → Existing API → Contract → Compatibility → Implementation → Testing
+```
+
+Stage 2 (Existing API Analysis) uses API conventions and architecture to find the contract to extend. Stage 5 uses authentication and security. Stage 6 uses the database. Stage 8 uses the testing approach.
+
+The workflow does not assume the context is current. If it is missing, the workflow proceeds from repository evidence. Stale or conflicting context is reported when it affects the outcome. Secrets in a context are never reproduced.
+
 ## Stages
 
 Each stage follows the lifecycle in the [Workflow Specification](../../docs/workflow-specification.md).

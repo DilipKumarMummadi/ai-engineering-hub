@@ -11,14 +11,20 @@ Command / Workflow
  ↓
 Agent
  ↓
-Skill
+Project Context          (orientation, if the repository has one)
  ↓
-Tools / Repository Context
+Repository Evidence      (authority for current state)
+ ↓
+Skill Selection          (task-driven)
+ ↓
+Repository / Tools
  ↓
 Validation
  ↓
 Output
 ```
+
+Skills are selected by the agent and applied to the repository. Project Context and Repository Evidence sit between the agent and that selection because they tell the agent what it is looking at. They are not a step the user sees, and they are not a layer that executes anything.
 
 | Layer | Responsibility | Count | Specification | Registry |
 | --- | --- | --- | --- | --- |
@@ -28,6 +34,8 @@ Output
 | Workflow | A repeatable multi-stage engineering process | 7 | [Workflow Specification](workflow-specification.md) | [Workflow Registry](workflow-registry.md) |
 
 Each layer is defined once and reused by the layers above it. Lower layers do not know about higher ones.
+
+**Project Context** is not a layer of capability. It is information about the repository that skills, agents and workflows consume. It is supporting repository intelligence, not an execution layer. Agents and workflows read it through one standard, [Project Context Consumption](project-context-consumption.md), and treat it as orientation that current repository evidence can override. It is described in [Project Context](project-context.md).
 
 ## Skill Layer
 
@@ -113,13 +121,49 @@ Notes:
 
 - `.github/workflows/` is normally GitHub Actions' directory. The workflow definitions there are Markdown AI process definitions. GitHub Actions reads only `.yml` and `.yaml` files, so these do not run as Actions, and no Actions files exist for them.
 - `.agents/skills/` (tool-neutral skills) and `.github/instructions/` are reserved and currently contain only placeholders.
-- `templates/` and `scripts/` are reserved and currently empty.
+- `templates/` holds the project context templates. `scripts/` holds the project context generator.
 
 Shared assets live at the top level: `docs/` and `evals/`.
 
-## Tools and Repository Context
+## Project Context
 
-Skills work on the repository context and on the tools the platform provides: reading files, searching, running local builds and tests, and reading logs or metrics that the user supplies or the environment exposes. The hub does not assume tools. When a tool is unavailable, the agent gives the command to run and says it was not run.
+Skills and agents are generic, so they work in any repository. Project context supplies the repository-specific facts and conventions they need: the technology stack, structure, architecture, conventions, test and build commands, CI/CD, observability, security setup and explicit constraints.
+
+Project context is **not another skill**. It has no behavior of its own, and it does not restate skill or agent guidance. It is contextual information consumed by skills, agents and workflows:
+
+```
+Generic Skill
++
+Project Context
+=
+Repository-aware recommendation
+```
+
+Rules that matter architecturally:
+
+- Each entry is a **Confirmed Fact**, **Inferred** or **Unknown**, with its source. An inference is never promoted to a fact.
+- Project context never contains secrets, credentials or personal data.
+- Project context can be stale. Current repository evidence normally takes precedence over it, and material conflicts are surfaced.
+- Project conventions take precedence over generic recommendations. Explicit constraints take precedence over both.
+- Project context does not grant authorization. The [Safety Model](#safety-model) applies unchanged.
+- The Hub does not change project context automatically.
+
+The structure and rules are in the [Project Context Specification](project-context-specification.md), and a reusable template is in [`templates/project-context/PROJECT-CONTEXT.md`](../templates/project-context/PROJECT-CONTEXT.md). The [Project Context Generator Specification](project-context-generator-specification.md) defines how a context is generated and updated from repository evidence. It is a procedure with a local command line implementation in [`scripts/project-context/`](../scripts/project-context/README.md). The [Drift Specification](project-context-drift-specification.md) adds a separate read-only check (`project-context drift`) that reports when a context may be stale and never changes it. Neither is a service, and neither is a skill, agent, command or workflow. 
+
+### How Agents and Workflows Use It
+
+Agents and workflows are context-aware without holding any project knowledge:
+
+- **Skills** stay generic and never read the context.
+- **Agents** each have a short Project Context section listing the few topics relevant to their responsibility, and follow [Project Context Consumption](project-context-consumption.md). They validate the claims a result depends on against repository evidence, prefer evidence over context, report material conflicts and staleness, continue without a context, and never reproduce secrets from it.
+- **Commands** are unchanged. They route to an agent, and the agent consumes context.
+- **Workflows** say where context helps and add no stage. The agent performing a stage loads what it needs.
+- Context can show which skills are likely to matter. It never selects them. Skill selection stays task-driven.
+- Nothing in the chain creates or updates the context. That remains the generator, run by the user.
+
+## Repository and Tools
+
+Skills work on the repository and on the tools the platform provides: reading files, searching, running local builds and tests, and reading logs or metrics that the user supplies or the environment exposes. The hub does not assume tools. When a tool is unavailable, the agent gives the command to run and says it was not run.
 
 ## Validation
 
@@ -144,7 +188,7 @@ The hub is evaluated at four levels, each independently.
 | Workflow evaluation | Does the workflow run the right stages, agents and gates, and skip the rest? | [`evals/workflows/`](../evals/workflows/README.md) |
 | Cross-layer integration evaluation | Does a real request produce the right routing, skills, process, safety behavior and validated output across all layers? | [`evals/integration/`](../evals/integration/README.md) |
 
-Commands have small routing evaluations in [`evals/commands/`](../evals/commands/README.md). Outcomes everywhere are qualitative: Pass, Needs Improvement or Fail. There are no numeric scores. The current status of agents, commands and workflows is kept in their registries. Most evaluation cases have not been run yet, and the registries say so.
+Commands have small routing evaluations in [`evals/commands/`](../evals/commands/README.md). The project context generator has its own cases in [`evals/project-context-generator/`](../evals/project-context-generator/README.md), and drift detection in [`evals/project-context-drift/`](../evals/project-context-drift/README.md). Outcomes everywhere are qualitative: Pass, Needs Improvement or Fail. There are no numeric scores. The current status of agents, commands and workflows is kept in their registries. Most evaluation cases have not been run yet, and the registries say so.
 
 ## Safety Model
 
@@ -252,6 +296,8 @@ The receiving agent should not have to ask again for what was already establishe
 .claude/{skills,agents,commands,workflows}/
 .github/{skills,agents,prompts,workflows}/
 docs/        specifications, registries and overviews
+templates/   reusable templates (project-context/)
+scripts/     project-context/ generator (Python standard library, no dependencies)
 evals/       skill, agents/, commands/, workflows/ and integration/ evaluations
 ```
 
@@ -263,4 +309,5 @@ evals/       skill, agents/, commands/, workflows/ and integration/ evaluations
 | Agents | [Agent Specification](agent-specification.md), [Agent Registry](agent-registry.md), [Agent Evaluation Matrix](agent-evaluation-matrix.md) |
 | Commands | [Commands](commands.md), [Command Registry](command-registry.md) |
 | Workflows | [Workflow Specification](workflow-specification.md), [Workflow Registry](workflow-registry.md), [Workflows](workflows.md) |
+| Project context | [Project Context Specification](project-context-specification.md), [Project Context](project-context.md), [Generator Specification](project-context-generator-specification.md), [Drift Specification](project-context-drift-specification.md), [Registry](project-context-registry.md), [Template](../templates/project-context/PROJECT-CONTEXT.md) |
 | Evaluation | [Evaluation suite](../evals/README.md), [Integration evaluations](../evals/integration/README.md) |

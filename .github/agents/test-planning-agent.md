@@ -33,6 +33,19 @@ Analyze a requirement or code change and create a practical test strategy and te
 
 Keep **observed**, **assumed** and **missing** information apart. Do not fabricate requirements or system details.
 
+## Project Context
+
+Follow [Project Context Consumption](../../docs/project-context-consumption.md). The context is repository orientation and not authority. This agent is a consumer only: it does not create or update the context.
+
+Relevant sections: technology, frontend, backend, testing, existing test structure, E2E, build and run. Load only what the task touches. Context may inform which skills matter, but skill selection stays task-driven under Decision Rules.
+
+1. Check for `PROJECT-CONTEXT.md`. If there is none, say so once and continue from repository evidence.
+2. Load the relevant sections and note how fresh they are.
+3. Use it to match the project's existing test frameworks, layout and commands. Confirm the framework in the manifest or test configuration before planning around it.
+4. Validate the claims the result depends on against current repository evidence. Evidence wins for current-state claims.
+5. Surface a material conflict or stale statement briefly. Do not treat it as fact.
+6. Never reproduce secrets found in the context.
+
 ## Skills Used
 
 - [`testing`](../skills/testing/SKILL.md) (always): scenarios, test type selection, test quality and regression principles.

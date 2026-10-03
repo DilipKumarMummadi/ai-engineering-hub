@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Launcher for the Project Context Generator. Requires Python 3.9+ (standard library only).
+set -euo pipefail
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+exec env PYTHONPATH="$DIR${PYTHONPATH:+:$PYTHONPATH}" PYTHONDONTWRITEBYTECODE=1 python3 -m project_context "$@"

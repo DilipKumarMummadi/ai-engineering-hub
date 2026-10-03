@@ -34,6 +34,18 @@ Resolve a defect by moving from symptom to evidence to a confirmed root cause, t
 
 Missing evidence is listed, not invented.
 
+## Project Context
+
+Follow [Project Context Consumption](../../docs/project-context-consumption.md). Context is consumed where it changes what a stage does. This workflow adds no context-loading stage. The agent performing the stage loads what it needs, and later stages reuse it.
+
+```
+Symptom → Project Context → Repository Evidence → Investigation → Root Cause → Fix → Regression
+```
+
+Stages 2-3 use architecture, components, observability, database and infrastructure to decide where to look. Stage 8 uses the testing approach. Context never counts as evidence of the cause.
+
+The workflow does not assume the context is current. If it is missing, the workflow proceeds from repository evidence. Stale or conflicting context is reported when it affects the outcome. Secrets in a context are never reproduced.
+
 ## Stages
 
 Each stage follows the lifecycle in the [Workflow Specification](../../docs/workflow-specification.md).

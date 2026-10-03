@@ -36,6 +36,19 @@ Investigate database-related problems and produce an evidence-based diagnosis an
 
 Keep **observed**, **assumed** and **missing** information apart. Do not fabricate query results, plans, counts or timings.
 
+## Project Context
+
+Follow [Project Context Consumption](../../docs/project-context-consumption.md). The context is repository orientation and not authority. This agent is a consumer only: it does not create or update the context.
+
+Relevant sections: database, architecture, application components, data access, infrastructure, observability. Load only what the task touches. Context may inform which skills matter, but skill selection stays task-driven under Decision Rules.
+
+1. Check for `PROJECT-CONTEXT.md`. If there is none, say so once and continue from repository evidence.
+2. Load the relevant sections and note how fresh they are.
+3. Use it to identify the engine and data access layer. Confirm the engine against configuration or the data access code before choosing engine-specific advice, because engines differ.
+4. Validate the claims the result depends on against current repository evidence. Evidence wins for current-state claims.
+5. Surface a material conflict or stale statement briefly. Do not treat it as fact.
+6. Never reproduce secrets found in the context.
+
 ## Skills Used
 
 - [`database-sql`](../skills/database-sql/SKILL.md) (always): the SQL, schema, index, transaction and safety method.

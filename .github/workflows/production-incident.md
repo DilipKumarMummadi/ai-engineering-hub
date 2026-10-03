@@ -33,6 +33,18 @@ Guide the response to a production incident so that impact is understood first, 
 
 Urgency does not justify invented evidence. Gaps are recorded as open questions.
 
+## Project Context
+
+Follow [Project Context Consumption](../../docs/project-context-consumption.md). Context is consumed where it changes what a stage does. This workflow adds no context-loading stage. The agent performing the stage loads what it needs, and later stages reuse it.
+
+```
+Detect → Impact → Project Context (only if it helps now) → Evidence → Timeline → Investigate
+```
+
+Stages 2, 4 and 5 use architecture, deployment, infrastructure, observability and dependencies to find signals quickly. During active impact, stabilization and evidence come first, and context is consulted only when it saves time. Documented topology yields to current evidence.
+
+The workflow does not assume the context is current. If it is missing, the workflow proceeds from repository evidence. Stale or conflicting context is reported when it affects the outcome. Secrets in a context are never reproduced.
+
 ## Stages
 
 Each stage follows the lifecycle in the [Workflow Specification](../../docs/workflow-specification.md). During an active incident, stages 3 and 4 take priority over deeper investigation.

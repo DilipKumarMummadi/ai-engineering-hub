@@ -27,6 +27,8 @@ Statuses are qualitative. There are no scores or rankings.
 | [e2e-test-creation](../.claude/workflows/e2e-test-creation.md) | Create a reliable browser E2E test, or recommend a lower test level | test-planning-agent | bug-investigation-agent, pr-review-agent | `/test-plan`, `/debug` | [`evals/workflows/e2e-test-creation/`](../evals/workflows/e2e-test-creation/README.md) | In Progress |
 | [production-incident](../.claude/workflows/production-incident.md) | Respond to a production incident from detection to prevention, stabilization first | production-incident-agent | bug-investigation-agent, database-troubleshooting-agent, architecture-agent | `/incident`, `/debug`, `/database`, `/architecture` | [`evals/workflows/production-incident/`](../evals/workflows/production-incident/README.md) | In Progress |
 
+Each workflow also has a Project Context section, following [Project Context Consumption](project-context-consumption.md). It names where context helps and adds no stage.
+
 All seven workflows are In Progress because none of their evaluation cases has been run yet.
 
 ## Relationships

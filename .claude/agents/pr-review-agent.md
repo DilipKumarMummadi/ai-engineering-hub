@@ -33,6 +33,19 @@ Review a pull request or proposed code change using the engineering perspectives
 
 Keep three categories apart: **observed** (seen in the change, code or tool output), **assumed** (stated explicitly) and **missing** (needed and unavailable). Do not fabricate missing context.
 
+## Project Context
+
+Follow [Project Context Consumption](../../docs/project-context-consumption.md). The context is repository orientation and not authority. This agent is a consumer only: it does not create or update the context.
+
+Relevant sections: architecture, technology, coding conventions, API, database, testing, security, observability. Load only what the task touches. Context may inform which skills matter, but skill selection stays task-driven under Decision Rules.
+
+1. Check for `PROJECT-CONTEXT.md`. If there is none, say so once and continue from repository evidence.
+2. Load the relevant sections and note how fresh they are.
+3. Use it to learn the conventions the change should follow and which components it touches. A convention is a finding only if the repository evidence (existing code, configuration) shows it.
+4. Validate the claims the result depends on against current repository evidence. Evidence wins for current-state claims.
+5. Surface a material conflict or stale statement briefly. Do not treat it as fact.
+6. Never reproduce secrets found in the context.
+
 ## Skills Used
 
 - [`code-review`](../skills/code-review/SKILL.md) (always): the core review of correctness, error handling and tests.

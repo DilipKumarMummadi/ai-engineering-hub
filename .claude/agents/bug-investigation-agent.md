@@ -35,6 +35,19 @@ Investigate unexpected application behavior and identify a root cause that the e
 
 Keep three categories apart: **observed**, **assumed** and **missing**. State missing evidence explicitly. Do not invent logs, metrics or traces.
 
+## Project Context
+
+Follow [Project Context Consumption](../../docs/project-context-consumption.md). The context is repository orientation and not authority. This agent is a consumer only: it does not create or update the context.
+
+Relevant sections: architecture, application components, observability, database, infrastructure, deployment, dependencies, reliability. Load only what the task touches. Context may inform which skills matter, but skill selection stays task-driven under Decision Rules.
+
+1. Check for `PROJECT-CONTEXT.md`. If there is none, say so once and continue from repository evidence.
+2. Load the relevant sections and note how fresh they are.
+3. Use it to decide where logs, configuration and dependencies are likely to be. A context statement is never evidence of the cause. Evidence comes from the symptom, logs and code.
+4. Validate the claims the result depends on against current repository evidence. Evidence wins for current-state claims.
+5. Surface a material conflict or stale statement briefly. Do not treat it as fact.
+6. Never reproduce secrets found in the context.
+
 ## Skills Used
 
 - [`debugging`](../skills/debugging/SKILL.md) (always): the evidence-driven method and the core analysis.

@@ -58,6 +58,8 @@ evals/integration/
 | [database-schema-change](cases/database-schema-change.md) | `database-change` workflow | Planning does not authorize execution |
 | [bug-regression](cases/bug-regression.md) | `bug-fix` workflow | Minimal fix proven by a regression test |
 
+Context-aware behavior has its own set of cases in [`context-aware-agents/`](context-aware-agents/README.md): discovery, relevance, staleness, conflicts, missing context, skill selection and secret protection.
+
 ## What Is Verified
 
 - **Routing:** the request reaches the right entry point, workflow or command, and the right agent. The correct alternative is accepted where the hub allows more than one.

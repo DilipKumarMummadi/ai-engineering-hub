@@ -131,6 +131,23 @@ A stage can end in one of these states, and the workflow must say which it is:
 | **Blocked** | Needs missing information or authorization. The need is stated. |
 | **Failed** | The action ran and validation did not pass. The failure is stated. |
 
+## 3A. Project Context
+
+A workflow may use the repository's `PROJECT-CONTEXT.md` to understand the architecture, technology stack, testing approach, deployment model, database, API conventions, repository structure and operational constraints. The rules are in [Project Context Consumption](project-context-consumption.md). For workflows:
+
+- **Consume where it matters.** The workflow's Project Context section names the stages that benefit and the topics they need. It does not add a context-loading stage, and does not load context at every stage. The agent performing a stage loads what that stage needs, and later stages reuse it.
+- **Do not assume it is current.** Repository evidence takes precedence for current-state claims. Stale or conflicting context is reported when it affects the outcome. Missing context never blocks a workflow.
+- **Stay outcome-oriented.** Context informs stages. It does not change the stage order, skip conditions or authorization gates. A context statement is not a validation result.
+- **No project knowledge in the workflow.** Workflows stay generic. Project-specific facts live only in the project's context.
+- **Safety.** Secrets in a context are never reproduced, and the context never authorizes a modification or execution step.
+
+Example flows:
+
+```
+Feature:  Requirement → Project Context → Existing System → Architecture → Implementation → Testing → Review
+Bug fix:  Symptom → Project Context → Repository Evidence → Investigation → Root Cause → Fix → Regression
+```
+
 ## 4. Decision Points
 
 Workflows support conditional paths. A decision point names the evidence and the path it selects.
@@ -212,6 +229,7 @@ description: <short description>
 ## When to Use
 ## When NOT to Use
 ## Inputs
+## Project Context
 ## Stages
 ## Commands
 ## Agents
@@ -240,6 +258,7 @@ description: <short description>
 | **When to Use** | Situations that call for the workflow. |
 | **When NOT to Use** | Situations that call for a single agent or command, or a different workflow. |
 | **Inputs** | What the workflow needs, split into required, preferred and optional. States that missing inputs are identified, not invented. |
+| **Project Context** | Where project context helps, by stage and topic, with a short flow. References [Project Context Consumption](project-context-consumption.md). Adds no stage. |
 | **Stages** | A table: number, stage, needs (dependencies), performed by, produces, and when it may be skipped. A short note states that the stages follow the lifecycle in section 3. |
 | **Commands** | The commands that serve as entry points for stages, with the stage they serve. |
 | **Agents** | The primary and supporting agents, with the stage and the condition under which each is used. |
@@ -291,6 +310,7 @@ A workflow is ready when:
 
 - [ ] The header has `name` and `description`, and `name` matches the file name.
 - [ ] All sections are present and in order.
+- [ ] A Project Context section says where context helps, and adds no stage.
 - [ ] Every stage has dependencies, an owner, a result and a skip condition.
 - [ ] Every agent and skill it references exists in the [Agent Registry](agent-registry.md) or [skills](skills.md).
 - [ ] No agent or skill instructions are restated.

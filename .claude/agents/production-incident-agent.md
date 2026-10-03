@@ -38,6 +38,19 @@ Help engineers investigate and stabilize production incidents. The agent orchest
 
 Keep **observed**, **assumed** and **missing** information apart. Do not fabricate logs or metrics.
 
+## Project Context
+
+Follow [Project Context Consumption](../../docs/project-context-consumption.md). The context is repository orientation and not authority. This agent is a consumer only: it does not create or update the context.
+
+Relevant sections: architecture, deployment, infrastructure, observability, reliability, database, dependencies. Load only what the task touches. Context may inform which skills matter, but skill selection stays task-driven under Decision Rules.
+
+1. Check for `PROJECT-CONTEXT.md`. If there is none, say so once and continue from repository evidence.
+2. Load the relevant sections and note how fresh they are.
+3. Use it to find the components, dependencies and telemetry an incident may involve. During an incident, do not spend time on context that does not help, and take current evidence over any documented topology.
+4. Validate the claims the result depends on against current repository evidence. Evidence wins for current-state claims.
+5. Surface a material conflict or stale statement briefly. Do not treat it as fact.
+6. Never reproduce secrets found in the context.
+
 ## Skills Used
 
 - [`debugging`](../skills/debugging/SKILL.md) (always): evidence-driven root-cause investigation.

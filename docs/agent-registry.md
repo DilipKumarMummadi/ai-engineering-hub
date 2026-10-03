@@ -27,6 +27,8 @@ Statuses are qualitative. There are no scores or rankings.
 | [database-troubleshooting-agent](../.claude/agents/database-troubleshooting-agent.md) | Database | Investigate database-related problems and produce an evidence-based diagnosis and safe remediation. | In Progress |
 | [production-incident-agent](../.claude/agents/production-incident-agent.md) | Production Operations | Investigate and stabilize production incidents, prioritizing impact and reversible mitigation. | In Progress |
 
+Each agent also has a Project Context section, following [Project Context Consumption](project-context-consumption.md). It lists the few topics relevant to the agent and adds no project-specific knowledge.
+
 All seven agents are In Progress because none of their evaluation cases has been run yet. See the [Agent Evaluation Matrix](agent-evaluation-matrix.md) for what the cases cover.
 
 ## Skill Mapping
