@@ -1,0 +1,20 @@
+{
+  "name": "ai-engineering-hub",
+  "owner": {
+    "name": "Dilip Kumar Mummadi"
+  },
+  "metadata": {
+    "description": "Reusable AI engineering skills for software development."
+  },
+  "plugins": [
+    {
+      "name": "ai-engineering-hub",
+      "source": "./",
+      "description": "Reusable AI engineering skills: code review, debugging, testing, architecture, API, database, security, performance, observability, reliability and change intelligence.",
+      "category": "engineering",
+      "author": {
+        "name": "Dilip Kumar Mummadi"
+      }
+    }
+  ]
+}

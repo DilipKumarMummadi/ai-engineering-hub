@@ -13,7 +13,7 @@ REPO = Path(__file__).resolve().parents[2]
 
 def make_copy() -> Path:
     tmp = Path(tempfile.mkdtemp())
-    for rel in ("plugin.json", "README.md", "skills", ".claude/skills", "docs/plugin-architecture.md", "com.github.copilot"):
+    for rel in ("plugin.json", "README.md", ".claude-plugin", "skills", ".claude/skills", "docs/plugin-architecture.md", "com.github.copilot"):
         s, d = REPO / rel, tmp / rel
         d.parent.mkdir(parents=True, exist_ok=True)
         shutil.copytree(s, d) if s.is_dir() else shutil.copy2(s, d)
@@ -52,6 +52,10 @@ class PluginTests(unittest.TestCase):
     def test_unknown_field(self):
         self.manifest(mcpServers={})
         self.assertTrue(self.has("not a permitted core field"))
+
+    def test_missing_marketplace(self):
+        (self.root / ".claude-plugin/marketplace.json").unlink()
+        self.assertTrue(self.has("marketplace.json"))
 
     def test_bad_version(self):
         self.manifest(version="one")

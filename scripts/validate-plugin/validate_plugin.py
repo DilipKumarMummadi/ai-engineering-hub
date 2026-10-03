@@ -70,6 +70,15 @@ def validate(root: Path) -> list[str]:
     if "extensions" in data and not (isinstance(data["extensions"], dict) and all(isinstance(v, dict) for v in data["extensions"].values())):
         fail("plugin.json: extensions must map namespaces to objects")
 
+    # Claude Code installs through a marketplace; without this file `plugin marketplace add` fails
+    mk = root / ".claude-plugin" / "marketplace.json"
+    try:
+        entries = json.loads(mk.read_text(encoding="utf-8")).get("plugins", [])
+        if not any(e.get("name") == name and e.get("source") == "./" for e in entries):
+            fail(f".claude-plugin/marketplace.json: must list plugin {name!r} with source './'")
+    except (OSError, ValueError, AttributeError):
+        fail(".claude-plugin/marketplace.json: missing or invalid (Claude Code cannot install the plugin without it)")
+
     # 6-7: skills layout and source agreement
     skills_dir = root / "skills"
     skills = {}
