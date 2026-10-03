@@ -17,6 +17,8 @@ This directory holds the evaluation suite for the AI Engineering Hub skills. Eac
 | `observability` | [evals/observability](observability/README.md) |
 | `reliability` | [evals/reliability](reliability/README.md) |
 
+Agent evaluations live under `evals/agents/` and use the same case format and outcomes: [pr-review-agent](agents/pr-review-agent/README.md), [bug-investigation-agent](agents/bug-investigation-agent/README.md), [test-planning-agent](agents/test-planning-agent/README.md), [architecture-agent](agents/architecture-agent/README.md), [api-development-agent](agents/api-development-agent/README.md), [database-troubleshooting-agent](agents/database-troubleshooting-agent/README.md) and [production-incident-agent](agents/production-incident-agent/README.md).
+
 ## Purpose
 
 The suite checks whether a skill makes an AI assistant behave the way the skill says it should. It is a shared, reviewable definition of "good" for each skill.
