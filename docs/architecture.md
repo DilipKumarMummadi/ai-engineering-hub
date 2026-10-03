@@ -1,57 +1,266 @@
 # Architecture
 
-This document describes the intended architecture of the AI Engineering Hub. Nothing described here is implemented yet; this is the design the repository will grow into.
+This document describes the architecture of the AI Engineering Hub as implemented: how a user's request moves through the layers, what each layer is responsible for, and the rules that keep the system safe, honest and extensible.
 
-## Building Blocks
-
-### Skill
-A reusable capability that teaches the AI how to perform a specific engineering task (for example, `code-review` or `unit-test-generation`).
-
-### Agent
-A role-oriented AI worker that combines skills, rules, and tools to perform a broader engineering responsibility (for example, a Test Engineer).
-
-### Command
-A developer-facing entry point that invokes a specific capability.
-
-### Workflow
-A multi-step engineering process that combines multiple capabilities (for example, feature development from design to pull request).
-
-### Rule
-A constraint or engineering standard that should be followed.
-
-### Template
-A reusable structure for producing engineering artifacts such as design docs, ADRs, or test plans.
-
-### Eval
-A test case used to measure and validate AI behavior.
-
-## How They Relate
+## Conceptual Model
 
 ```
-Command ──invokes──▶ Skill / Agent / Workflow
-Workflow ──orchestrates──▶ Agents + Skills
-Agent ──combines──▶ Skills + Rules + Tools
-Skill ──produces──▶ Artifacts (via Templates)
-Eval ──validates──▶ Skills, Agents, Workflows
+User
+ ↓
+Command / Workflow
+ ↓
+Agent
+ ↓
+Skill
+ ↓
+Tools / Repository Context
+ ↓
+Validation
+ ↓
+Output
 ```
+
+| Layer | Responsibility | Count | Specification | Registry |
+| --- | --- | --- | --- | --- |
+| Skill | A focused engineering capability | 12 | [Skill Specification](skill-specification.md) | [Skills](skills.md) |
+| Agent | Orchestrates skills around one engineering responsibility | 7 | [Agent Specification](agent-specification.md) | [Agent Registry](agent-registry.md) |
+| Command | A lightweight user-facing entry point to one agent | 7 | [Commands](commands.md) | [Command Registry](command-registry.md) |
+| Workflow | A repeatable multi-stage engineering process | 7 | [Workflow Specification](workflow-specification.md) | [Workflow Registry](workflow-registry.md) |
+
+Each layer is defined once and reused by the layers above it. Lower layers do not know about higher ones.
+
+## Skill Layer
+
+Skills provide focused engineering capabilities. A skill explains how to do one kind of engineering work well, and can be reused by any agent that needs it.
+
+| Skill | Capability |
+| --- | --- |
+| `code-review` | Review changes and produce evidence-based findings |
+| `debugging` | Investigate failures from symptom to confirmed cause |
+| `testing` | Plan, write and assess tests |
+| `playwright` | Browser and end-to-end tests |
+| `refactoring` | Improve structure while preserving behavior |
+| `architecture` | Analyze and design system structure |
+| `api-development` | Design and evolve APIs |
+| `database-sql` | SQL, schema, transactions and query behavior |
+| `security` | Threat reasoning and hardening |
+| `performance` | Measured performance analysis |
+| `observability` | Logs, metrics, traces and telemetry analysis |
+| `reliability` | Failure handling, resilience and recovery |
+
+Skills are reusable across agents. For example, `debugging` is used by the bug investigation and production incident agents, and `security` by review, API and database work. Skills do not call agents, commands or workflows.
+
+## Agent Layer
+
+An agent orchestrates skills around one specific engineering responsibility. It decides which skills a task needs, combines their results without duplicating them, keeps evidence apart from assumptions, respects authorization limits, and recommends handoffs. It does not invoke every skill.
+
+| Agent | Responsibility | Core skills |
+| --- | --- | --- |
+| `pr-review-agent` | Review a change as a whole | `code-review` |
+| `bug-investigation-agent` | Reach a supported root cause for unexpected behavior | `debugging` |
+| `test-planning-agent` | Produce a test strategy at the lowest effective level | `testing` |
+| `architecture-agent` | Analyze and design architecture with explicit trade-offs | `architecture` |
+| `api-development-agent` | Design, implement and evolve APIs | `api-development` |
+| `database-troubleshooting-agent` | Diagnose database problems and plan safe remediation | `database-sql` |
+| `production-incident-agent` | Stabilize and investigate production incidents | `debugging`, `observability`, `reliability` |
+
+Each agent's full skill set, including the skills selected by context, is in the [Agent Registry](agent-registry.md). A skill outside an agent's set is reached by a handoff or a direct request, and not assumed.
+
+## Command Layer
+
+Commands are lightweight, user-facing entry points. A command passes the user's full request, including pasted logs, code and constraints, to one agent unchanged. It adds no engineering logic, and it does not authorize destructive, production or data-changing actions.
+
+| Command | Routes to |
+| --- | --- |
+| `/review` | `pr-review-agent` |
+| `/debug` | `bug-investigation-agent` |
+| `/test-plan` | `test-planning-agent` |
+| `/architecture` | `architecture-agent` |
+| `/api` | `api-development-agent` |
+| `/database` | `database-troubleshooting-agent` |
+| `/incident` | `production-incident-agent` |
+
+A command never selects skills or runs a process of its own. No command starts a workflow yet. A future command may do so, and would stay thin.
+
+## Workflow Layer
+
+Workflows represent repeatable, multi-stage engineering processes. They coordinate commands and agents and apply skills directly only where no agent fits a stage. A workflow owns stage order, dependencies, decision points, validation gates and handoffs. It does not restate agent or skill instructions.
+
+| Workflow | Outcome |
+| --- | --- |
+| `feature-development` | A new feature, validated and ready for PR |
+| `bug-fix` | A defect fixed on a confirmed root cause, with a regression test |
+| `api-change` | A new or changed API with a compatibility decision |
+| `database-change` | A schema, data or query change with a rollback plan |
+| `pr-preparation` | A finished change prepared for PR |
+| `e2e-test-creation` | A reliable browser test, or a recommended lower-level test |
+| `production-incident` | A stabilized, explained and followed-up incident |
+
+Every stage follows the lifecycle *input, context, action, result, validation, decision, next stage*, and a stage can be completed, skipped, blocked or failed. Stages that do not apply are skipped and the reason is recorded. Workflows are started by asking for one by name, for example "run the bug-fix workflow".
 
 ## Platform Mapping
 
-Each platform keeps its configuration in its native location:
+Each platform keeps its definitions in its native location. The two copies of an agent, command or workflow carry the same behavior.
 
-| Concern | Claude Code | GitHub Copilot | Tool-neutral |
-| --- | --- | --- | --- |
-| Skills | `.claude/skills/` | `.github/skills/` | `.agents/skills/` |
-| Agents | `.claude/agents/` | `.github/agents/` | |
-| Commands / Prompts | `.claude/commands/` | `.github/prompts/` | |
-| Rules / Instructions | | `.github/instructions/` | |
+| Concern | Claude Code | GitHub Copilot |
+| --- | --- | --- |
+| Skills | `.claude/skills/<name>/SKILL.md` | `.github/skills/<name>/SKILL.md` |
+| Agents | `.claude/agents/<name>.md` | `.github/agents/<name>.md` |
+| Commands | `.claude/commands/<name>.md` | `.github/prompts/<name>.prompt.md` |
+| Workflows | `.claude/workflows/<name>.md` | `.github/workflows/<name>.md` |
 
-Shared assets live at the top level: `templates/`, `evals/`, `scripts/`, `docs/`.
+Notes:
 
-## Principles
+- `.github/workflows/` is normally GitHub Actions' directory. The workflow definitions there are Markdown AI process definitions. GitHub Actions reads only `.yml` and `.yaml` files, so these do not run as Actions, and no Actions files exist for them.
+- `.agents/skills/` (tool-neutral skills) and `.github/instructions/` are reserved and currently contain only placeholders.
+- `templates/` and `scripts/` are reserved and currently empty.
 
-- Reuse capabilities instead of duplicating prompts.
-- Keep platform-specific configuration in native directories.
-- Avoid duplicating logic across platforms where practical.
-- Every important capability is documented and evaluated.
-- Directories for skills, agents, and workflows use lowercase kebab-case (for example `code-review`, `playwright-debugging`).
+Shared assets live at the top level: `docs/` and `evals/`.
+
+## Tools and Repository Context
+
+Skills work on the repository context and on the tools the platform provides: reading files, searching, running local builds and tests, and reading logs or metrics that the user supplies or the environment exposes. The hub does not assume tools. When a tool is unavailable, the agent gives the command to run and says it was not run.
+
+## Validation
+
+Validation is a layer of its own, not an afterthought. Each layer validates differently:
+
+- **Skills and agents** check their own conclusions against evidence, and state what was not verified.
+- **Workflows** define stage validation, final validation, evidence requirements, test requirements and rollback considerations, and never report success unless the required stages completed.
+- **The hub** checks itself through the evaluations below.
+
+## Output
+
+The output of a request is a result the user can act on: a prioritized review, an investigation with a labeled timeline and hypotheses, a test plan, a design with trade-offs, a change report, or an incident analysis. Output states what was done, what was skipped and why, what was verified, and what remains open. It does not claim completion that did not happen.
+
+## Evaluation Layer
+
+The hub is evaluated at four levels, each independently.
+
+| Level | Evaluation question | Location |
+| --- | --- | --- |
+| Skill evaluation | Can the capability perform correctly? | `evals/<skill>/` |
+| Agent evaluation | Can the agent select and orchestrate the right skills for its responsibility? | [`evals/agents/`](../evals/agents/README.md) |
+| Workflow evaluation | Does the workflow run the right stages, agents and gates, and skip the rest? | [`evals/workflows/`](../evals/workflows/README.md) |
+| Cross-layer integration evaluation | Does a real request produce the right routing, skills, process, safety behavior and validated output across all layers? | [`evals/integration/`](../evals/integration/README.md) |
+
+Commands have small routing evaluations in [`evals/commands/`](../evals/commands/README.md). Outcomes everywhere are qualitative: Pass, Needs Improvement or Fail. There are no numeric scores. The current status of agents, commands and workflows is kept in their registries. Most evaluation cases have not been run yet, and the registries say so.
+
+## Safety Model
+
+The system distinguishes four kinds of activity.
+
+| Kind | Meaning | Default |
+| --- | --- | --- |
+| **Analysis** | Reading and investigating. | Allowed |
+| **Planning** | Proposing changes, designs, migrations and rollbacks. Nothing changes. | Allowed |
+| **Modification** | Editing files in the working tree. | Needs the user's request for the change |
+| **Execution** | Running something that affects a system beyond the working tree. | Needs explicit, specific authorization |
+
+- Authorization must not be inferred from a request for analysis. A finished plan does not permit carrying it out. Starting a workflow does not authorize the actions inside it.
+- Authorization is specific to the action and the environment. Approval for one does not extend to another.
+- Potentially destructive or hard-to-reverse operations require explicit authorization, with the effect, the risk and the way to undo it stated first. They include:
+  - production changes
+  - database updates, deletes and migrations
+  - file deletion
+  - infrastructure changes
+  - deployments
+  - security-sensitive operations
+- Urgency is not authorization.
+- Secrets and personal data found during work are referred to by location and not repeated.
+
+## Evidence Model
+
+The system keeps four kinds of statement apart.
+
+| Label | Meaning |
+| --- | --- |
+| **Observed** | Seen directly in supplied or retrieved evidence. |
+| **Assumed** | Taken as true without evidence, and said to be so. |
+| **Hypothesis** | A proposed explanation that has not been confirmed. |
+| **Confirmed** | Supported by evidence that could have disproved it. |
+
+Correlation is not cause. A root cause is reported as confirmed only when the evidence supports it, otherwise as "not yet confirmed".
+
+The AI must never fabricate:
+
+- logs
+- metrics
+- traces
+- test results
+- deployment results
+- database execution results
+- benchmark results
+
+Something that was not run is reported as not run, with the command to run it.
+
+## Composition Model
+
+Not every task needs every skill. Selection is contextual, and each additional skill must have a reason in the task or the evidence.
+
+| Task | Composition |
+| --- | --- |
+| Simple code review | `code-review` |
+| Security-sensitive API review | `code-review` + `security` + `api-development` |
+| Production database incident | `production-incident-agent` + `debugging` + `observability` + `database-sql` + `reliability` |
+| Bug with a clear reproduction | `debugging` + `testing` + `code-review`, with evidence gathering reduced |
+| Pure validation rule in a UI form | `testing` at the component level, with no browser test |
+
+The same applies to workflows: stages that do not help the outcome are skipped. An agent or workflow that runs everything on every task is behaving incorrectly.
+
+## Handoff Model
+
+Agents hand work to each other as a recommendation, not as an automatic chain. An agent hands off when the work moves outside its responsibility, and does not start the other agent's work unless asked.
+
+| From | To | When |
+| --- | --- | --- |
+| PR Review | Bug Investigation | A finding needs deeper investigation of behavior |
+| Bug Investigation | Architecture | A fix requires an architectural change |
+| API Development | Test Planning | A detailed test plan is needed |
+| Database Troubleshooting | Production Incident | Production is affected now |
+| Production Incident | Architecture | The incident exposes a systemic design problem |
+
+The full set of possible handoffs is in the [Agent Registry](agent-registry.md), and workflow-to-workflow routes are in the [Workflow Registry](workflow-registry.md).
+
+A handoff preserves:
+
+- the problem statement
+- the evidence
+- the findings
+- the hypotheses
+- the decisions
+- the open questions
+
+The receiving agent should not have to ask again for what was already established, and should keep observed, assumed and hypothesized information labeled.
+
+## Architectural Principles
+
+1. **Reuse skills instead of duplicating instructions.** A capability is defined once.
+2. **Keep agents focused.** One agent, one engineering responsibility.
+3. **Keep commands lightweight.** A command routes a request and adds no engineering logic.
+4. **Use workflows for repeatable multi-stage processes.** They orchestrate and do not restate.
+5. **Evaluate every layer independently.** Skills, agents, workflows and commands each have their own cases.
+6. **Validate the complete chain with integration evaluations.** Layers can each pass and the seams can still fail.
+7. **Prefer evidence over assumptions.** Label what is observed, assumed, hypothesized and confirmed.
+8. **Minimize unnecessary work.** Select the skills and stages the task needs, and skip the rest.
+9. **Preserve user control over modifications.** Analysis and planning do not authorize change.
+10. **Keep the system extensible.** Add a capability at the right layer, register it, specify it, and evaluate it, without changing the layers that reuse it.
+
+## Repository Layout
+
+```
+.claude/{skills,agents,commands,workflows}/
+.github/{skills,agents,prompts,workflows}/
+docs/        specifications, registries and overviews
+evals/       skill, agents/, commands/, workflows/ and integration/ evaluations
+```
+
+## Documentation Map
+
+| Topic | Document |
+| --- | --- |
+| Skills | [Skill Specification](skill-specification.md), [Skills](skills.md) |
+| Agents | [Agent Specification](agent-specification.md), [Agent Registry](agent-registry.md), [Agent Evaluation Matrix](agent-evaluation-matrix.md) |
+| Commands | [Commands](commands.md), [Command Registry](command-registry.md) |
+| Workflows | [Workflow Specification](workflow-specification.md), [Workflow Registry](workflow-registry.md), [Workflows](workflows.md) |
+| Evaluation | [Evaluation suite](../evals/README.md), [Integration evaluations](../evals/integration/README.md) |

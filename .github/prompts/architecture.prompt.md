@@ -1,0 +1,20 @@
+---
+description: Analyze or design system architecture using the architecture-agent
+agent: agent
+---
+
+# /architecture
+
+Handle this request with the `architecture-agent`. Read `.github/agents/architecture-agent.md` and follow it. The agent decides which skills to use.
+
+Useful context, if available: requirements, current architecture, constraints, scale, integrations, reliability requirements, security requirements, cost constraints. Pass along whatever you already have. Do not require anything in a fixed form.
+
+Pass the full request, including any pasted logs, code, errors, and constraints, to the agent unchanged. Do not summarize or drop technical detail. Keep the constraints the user stated.
+
+If the request is empty, pass that fact on and let the agent identify what it needs.
+
+Do not add engineering instructions of your own. If important information is missing, let the agent identify what is needed instead of asking the user for a fixed form.
+
+This command does not authorize changes to code, infrastructure, or configuration.
+
+The request is everything the user wrote after this prompt, plus any attached files, selection, or chat context.
