@@ -144,7 +144,7 @@ A workflow may use the repository's `PROJECT-CONTEXT.md` to understand the archi
 Example flows:
 
 ```
-Feature:  Requirement → Project Context → Existing System → Architecture → Implementation → Testing → Review
+Feature:  Requirement → Repository → Project Context → Existing System → Design → Plan → Implementation → Testing → Security → Change Intelligence → Review → PR Preparation → PR Intelligence → Final Validation
 Bug fix:  Symptom → Project Context → Repository Evidence → Investigation → Root Cause → Fix → Regression
 ```
 
@@ -166,6 +166,10 @@ Rules:
 - Do not require irrelevant stages. When the condition is false, the stage is skipped.
 - When the condition cannot be judged, treat the stage as **Blocked** and ask, or state the assumption.
 - Decision points may route to another workflow. Say so, and pass the context.
+
+### Lifecycle workflows: checkpoints and failures
+
+A long lifecycle workflow such as `feature-development` may define human checkpoints (for example PLAN READY, IMPLEMENTATION READY, VALIDATION READY, PR READY) where it stops for user confirmation. A checkpoint is a gate, not a stage. Requirements may be classified Confirmed, Inferred or Unknown. A failed stage is reported with the stage, failure, evidence, likely cause, what continues and what is blocked. A final readiness uses READY, NEEDS_CHANGES or NEEDS_INFORMATION, which correspond to the Ready, Needs Changes and Needs Information results of the [PR Intelligence Specification](pr-intelligence-specification.md); failing tests never yield READY.
 
 ## 5. Safety
 
@@ -298,11 +302,26 @@ The two copies carry the same stages, decision points and safety rules. They dif
 
 > **Not GitHub Actions.** Workflow definitions here are AI engineering processes, not CI/CD. GitHub Actions reads only `.yml` and `.yaml` files in `.github/workflows/`. The Markdown definitions do not run as Actions and must not be renamed to YAML. Do not add Actions files for these workflows.
 
-## 9. Relationship to Commands
+## 9. Relationship to Commands and Entry Points
 
-Commands remain unchanged. Each command still routes to one agent. A workflow uses commands as the entry points for its stages where a command fits, for example `/architecture` for an architecture assessment stage or `/review` for a review stage.
+Agent commands are unchanged: each still routes to one agent. A workflow uses commands as the entry points for its stages where a command fits, for example `/architecture` for an architecture assessment stage or `/review` for a review stage.
 
-A future command may start a workflow as a whole. Until then, a workflow is started by asking for it by name, for example "run the bug-fix workflow". A command must not duplicate a workflow's stages.
+A workflow as a whole has one entry point:
+
+| Workflow | Entry command |
+| --- | --- |
+| feature-development | `/feature` |
+| bug-fix | `/bug-fix` |
+| api-change | `/api-change` |
+| database-change | `/database-change` |
+| e2e-test-creation | `/e2e` |
+| pr-preparation | `/pr-prep` |
+| production-incident | `/incident` (the existing agent command; it starts `production-incident-agent`) |
+| pr-intelligence | `/pr-intelligence`, `/review-pr` |
+
+A **workflow command** names exactly one workflow file (`.claude/workflows/<name>.md` or `.github/workflows/<name>.md`) and no agent, passes the request unchanged, and adds no stages, engineering instructions, project context logic or skill selection. It does not authorize migrations, deployments, merges, pushes, approvals or production changes. The validator enforces that each command names exactly one existing agent or exactly one existing workflow, that both platforms agree, and that no two commands share a workflow. A workflow can still be started by asking for it by name. A command must not duplicate a workflow's stages.
+
+Shared mechanics (context loading, requirement loading, evidence classification, MCP detection, testing, change intelligence, code review routing, PR preparation, final validation, the output contract, states, checkpoints and failure reporting) are in [Workflow Common Guidance](workflow-common.md). Workflows link there instead of repeating them.
 
 ## 10. Quality Checklist
 

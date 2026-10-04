@@ -29,6 +29,8 @@ evals/workflows/
 └── production-incident/
 ```
 
+Cross-workflow Phase 4 cases are in [`phase-4/`](phase-4/README.md).
+
 Each workflow directory contains a `README.md` and a `cases/` directory.
 
 ## What Is Verified

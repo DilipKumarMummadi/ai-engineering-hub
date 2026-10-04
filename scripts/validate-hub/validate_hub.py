@@ -138,14 +138,22 @@ def check_commands(agents):
                 tool_headings.setdefault(name, {})[key] = re.findall(r"(?m)^#{1,3} .*$", t)
                 continue
             named = sorted(set(re.findall(r"`([a-z-]+-agent)`", t)))
-            if len(named) != 1 or named[0] not in agents:
-                fail(f"{plat['commands']}/{p.name}", f"must route to exactly one existing agent, found {named}")
+            wf = sorted(set(re.findall(re.escape(plat["workflows"]) + r"/([a-z0-9-]+)\.md", t)))
+            if wf:  # workflow command: routes to exactly one existing workflow, not to an agent
+                if named or len(wf) != 1 or not (ROOT / PLATFORMS["claude"]["workflows"] / f"{wf[0]}.md").is_file():
+                    fail(f"{plat['commands']}/{p.name}", f"a workflow command must name exactly one existing workflow and no agent, found {wf} {named}")
+                    continue
+                target = "workflow:" + wf[0]
+            elif len(named) != 1 or named[0] not in agents:
+                fail(f"{plat['commands']}/{p.name}", f"must route to exactly one existing agent or workflow, found {named}")
                 continue
+            else:
+                target = named[0]
             if re.search(r"(?i)project[- ]context", t):
                 fail(f"{plat['commands']}/{p.name}", "commands must not contain project context logic")
             if re.search(r"(?i)skills/|\bselect(s)? skills?\b.*:", t):
                 fail(f"{plat['commands']}/{p.name}", "commands must not select skills")
-            routes.setdefault(key, {})[p.name.replace(plat["cmd_suffix"], "")] = named[0]
+            routes.setdefault(key, {})[p.name.replace(plat["cmd_suffix"], "")] = target
     for name, by_plat in tool_headings.items():
         if len(by_plat) != 2 or by_plat["claude"] != by_plat["github"]:
             fail(f"commands/{name}", "tool command missing on a platform or structure differs between platforms")
@@ -155,9 +163,11 @@ def check_commands(agents):
     for variant, base in ENTRY_VARIANTS.items():
         if variant in claude_routes and claude_routes[variant] != claude_routes.get(base):
             fail(f"commands/{variant}", f"must route to the same agent as /{base}")
-    independent = {n: a for n, a in claude_routes.items() if n not in ENTRY_VARIANTS}
+    independent = {n: a for n, a in claude_routes.items() if n not in ENTRY_VARIANTS and not a.startswith("workflow:")}
     if len(set(independent.values())) != len(independent):
         fail("commands", "two commands route to the same agent")
+    for a, b in [(x, y) for x in claude_routes for y in claude_routes if x < y and claude_routes[x] == claude_routes[y] and claude_routes[x].startswith("workflow:")]:
+        fail("commands", f"/{a} and /{b} route to the same workflow")
     return routes.get("claude", {})
 
 

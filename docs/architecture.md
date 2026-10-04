@@ -58,7 +58,7 @@ Skills are selected by the agent and applied to the repository. Project Context 
 | --- | --- | --- | --- | --- |
 | Skill | A focused engineering capability | 13 | [Skill Specification](skill-specification.md) | [Skills](skills.md) |
 | Agent | Orchestrates skills around one engineering responsibility | 9 | [Agent Specification](agent-specification.md) | [Agent Registry](agent-registry.md) |
-| Command | A lightweight user-facing entry point to one agent, or (`/context`) to a Hub tool | 11 | [Commands](commands.md) | [Command Registry](command-registry.md) |
+| Command | A lightweight user-facing entry point to one agent, to one workflow, or (`/context`) to a Hub tool | 17 | [Commands](commands.md) | [Command Registry](command-registry.md) |
 | Workflow | A repeatable multi-stage engineering process | 8 | [Workflow Specification](workflow-specification.md) | [Workflow Registry](workflow-registry.md) |
 
 Each layer is defined once and reused by the layers above it. Lower layers do not know about higher ones.
@@ -121,7 +121,7 @@ Commands are lightweight, user-facing entry points. A command passes the user's 
 | `/change-impact` | `change-intelligence-agent` |
 | `/pr-intelligence` | `pr-intelligence-agent` |
 
-A command never selects skills or runs a process of its own. No command starts a workflow yet. A future command may do so, and would stay thin.
+A command never selects skills or runs a process of its own. Six workflow commands route to exactly one workflow file instead of an agent and stay thin: `/feature`, `/bug-fix`, `/api-change`, `/database-change`, `/e2e` and `/pr-prep`. `/incident` remains the entry for the production-incident workflow.
 
 ## Workflow Layer
 
@@ -129,7 +129,7 @@ Workflows represent repeatable, multi-stage engineering processes. They coordina
 
 | Workflow | Outcome |
 | --- | --- |
-| `feature-development` | A new feature, validated and ready for PR |
+| `feature-development` | A new feature taken through a 14-stage lifecycle with human checkpoints (PLAN READY, IMPLEMENTATION READY, VALIDATION READY, PR READY), validated and ready for PR |
 | `bug-fix` | A defect fixed on a confirmed root cause, with a regression test |
 | `api-change` | A new or changed API with a compatibility decision |
 | `database-change` | A schema, data or query change with a rollback plan |
@@ -138,7 +138,9 @@ Workflows represent repeatable, multi-stage engineering processes. They coordina
 | `production-incident` | A stabilized, explained and followed-up incident |
 | `pr-intelligence` | A readiness decision for a complete proposed change |
 
-Every stage follows the lifecycle *input, context, action, result, validation, decision, next stage*, and a stage can be completed, skipped, blocked or failed. Stages that do not apply are skipped and the reason is recorded. Workflows are started by asking for one by name, for example "run the bug-fix workflow".
+Every stage follows the lifecycle *input, context, action, result, validation, decision, next stage*, and a stage can be completed, skipped, blocked or failed. Stages that do not apply are skipped and the reason is recorded. Workflows are started by their workflow command (for example `/bug-fix`) or by asking for one by name, for example "run the bug-fix workflow".
+
+The common workflow shape is: Requirement / Trigger, Context Check, Existing System Analysis, Agent, Skills, Implementation / Investigation, Testing, Change Intelligence, Code Review, PR Preparation, PR Intelligence, Validation / Decision. Not every workflow uses every stage. Skills are routed dynamically from the evidence, not run from a fixed list. Shared mechanics, the output contract, states, checkpoints and failure reporting are in [Workflow Common Guidance](workflow-common.md), and per-workflow summaries are in [Workflows](workflows.md#phase-4-workflow-summaries). No Grafana MCP is used in this phase.
 
 ## Platform Mapping
 

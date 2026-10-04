@@ -1,6 +1,6 @@
 # Commands
 
-Commands are lightweight, user-facing entry points. A command routes a request to the right agent and passes the user's context along. It contains no engineering logic of its own.
+Commands are lightweight, user-facing entry points. A command routes a request to the right agent, or to one workflow, and passes the user's context along. It contains no engineering logic of its own.
 
 ```
 Command → Agent → Skills → Validation
@@ -17,6 +17,8 @@ The engineering instructions live in the agents and skills. A command only names
 
 `/review-pr` is an entry variant of `/pr-intelligence`: the same agent, started from a pull request URL or number that the agent retrieves through the `source-control` capability.
 
+Six commands are **workflow commands**: they route to exactly one workflow file instead of an agent (see [Workflow Commands](#workflow-commands)). `/incident` is the existing entry for the production-incident workflow and stays an agent command.
+
 One command is different. [`/context`](#context-generate-inspect-drift) is a **tool command**: it runs the Hub's Project Context Generator on the repository you are working in instead of routing to an agent.
 
 ## Available Commands
@@ -31,6 +33,24 @@ One command is different. [`/context`](#context-generate-inspect-drift) is a **t
 | `/database` | database-troubleshooting-agent | Investigate or design database and SQL behavior |
 | `/incident` | production-incident-agent | Investigate an active or recent production incident |
 | `/review-pr` | pr-intelligence-agent | Review a GitHub pull request by URL or number, using a connected source-control MCP |
+| `/feature`, `/bug-fix`, `/api-change`, `/database-change`, `/e2e`, `/pr-prep` | a workflow (none) | See [Workflow Commands](#workflow-commands) |
+
+## Workflow Commands
+
+A workflow command starts one multi-stage workflow. It names the workflow file, passes the full request unchanged, and adds no stages or engineering instructions. The workflow decides the stages, agents, skills and human checkpoints. Reusable mechanics are in [Workflow Common Guidance](workflow-common.md).
+
+| Command | Workflow | Purpose |
+| --- | --- | --- |
+| `/feature` | [feature-development](../.claude/workflows/feature-development.md) | Take a feature from requirement to a validated change |
+| `/bug-fix` | [bug-fix](../.claude/workflows/bug-fix.md) | Fix a defect on a supported root cause, with a regression test |
+| `/api-change` | [api-change](../.claude/workflows/api-change.md) | Design, implement and validate an API change |
+| `/database-change` | [database-change](../.claude/workflows/database-change.md) | Plan, implement and validate a schema, data or query change |
+| `/e2e` | [e2e-test-creation](../.claude/workflows/e2e-test-creation.md) | Create a browser E2E test, or recommend a lower level |
+| `/pr-prep` | [pr-preparation](../.claude/workflows/pr-preparation.md) | Prepare a finished change for a pull request |
+
+Use `/incident` for the production-incident workflow and `/pr-intelligence` or `/review-pr` for readiness assessment. Use `/debug`, `/api` or `/database` when a single agent is enough.
+
+Workflow commands do not authorize applying migrations, deployments, merges, pushes, approvals or production changes. The workflow's requirements-and-plan checkpoint comes before any edit.
 
 ## `/context`: Generate, Inspect, Drift
 
@@ -152,6 +172,7 @@ A command is a request to start work. It is not authorization to change anything
 - `/review-pr` does not authorize approvals, merges, comments or changes on the pull request, and never involves credentials.
 - `/review` does not authorize edits, merges, approvals, pushes or comments on a pull request.
 - `/context` modifies only `PROJECT-CONTEXT.md` of the target repository, only through the generator, and only for `generate`. It does not authorize editing source or configuration, commits, pushes or deployments, and it never reproduces a secret.
+- `/feature`, `/bug-fix`, `/api-change`, `/database-change`, `/e2e` and `/pr-prep` do not authorize applying migrations, deployments, merges, pushes, approvals or production changes. Planning is never authorization, and the workflow's checkpoints still apply.
 - `/debug`, `/architecture`, `/test-plan` and `/api` do not authorize changes to code, data, configuration or infrastructure by themselves.
 
 Authorization is given explicitly by the user, for a specific action. A command that names a risky action ("/database delete the duplicates") still goes through the agent's safety rules.
@@ -163,11 +184,11 @@ Authorization is given explicitly by the user, for a specific action. A command 
 | Claude Code | `.claude/commands/<name>.md` | A Markdown command file. `$ARGUMENTS` receives the text after the command. |
 | GitHub Copilot | `.github/prompts/<name>.prompt.md` | A Markdown prompt file with front matter. The text after the prompt name is the request. |
 
-The two formats are not identical, but the behavior and intent are the same: name the agent, pass the full request, add no engineering logic, and keep the safety boundaries. The command files and the registry are listed in the [Command Registry](command-registry.md).
+The two formats are not identical, but the behavior and intent are the same: name the agent (or workflow), pass the full request, add no engineering logic, and keep the safety boundaries. The command files and the registry are listed in the [Command Registry](command-registry.md).
 
 ## Adding or Changing a Command
 
-- A command must route to an existing agent and contain no engineering logic. The only exception is a tool command such as `/context`, which runs an existing Hub tool and is listed in the validator's tool-command set.
+- A command must route to exactly one existing agent, or be a workflow command naming exactly one existing workflow, and contain no engineering logic. Two commands must not route to the same agent or the same workflow (`/review-pr` is the one declared entry variant). The only exception is a tool command such as `/context`, which runs an existing Hub tool and is listed in the validator's tool-command set.
 - Create both the Claude command and the Copilot prompt, with equivalent behavior.
 - Add evaluation cases under `evals/commands/<name>/`. See [evals/commands](../evals/commands/README.md).
 - Update the [Command Registry](command-registry.md).

@@ -8,10 +8,14 @@ Reusable AI engineering skills, agents, commands and workflows for software engi
 | --- | --- | --- |
 | **Skills** (13): code-review, debugging, testing, playwright, refactoring, architecture, api-development, database-sql, security, performance, observability, reliability, change-intelligence | `skills/` | Yes |
 | **Agents** (9): PR review, PR intelligence, bug investigation, change intelligence, test planning, API development, architecture, database troubleshooting, production incident | `.claude/agents/`, `.github/agents/` | No (client-specific) |
-| **Commands**: review, debug, test-plan, architecture, api, database, incident, change-impact, pr-intelligence, review-pr, context | `.claude/commands/`, `.github/prompts/` | No |
-| **Workflows**: feature-development, bug-fix, api-change, database-change, pr-preparation, e2e-test-creation, production-incident, pr-intelligence | `.claude/workflows/`, `.github/workflows/` | No |
+| **Commands** (17): review, debug, test-plan, architecture, api, database, incident, change-impact, pr-intelligence, review-pr, context; workflow commands feature, bug-fix, api-change, database-change, e2e, pr-prep | `.claude/commands/`, `.github/prompts/` | No |
+| **Workflows**: feature-development (14-stage lifecycle with human checkpoints), bug-fix, api-change, database-change, pr-preparation, e2e-test-creation, production-incident, pr-intelligence | `.claude/workflows/`, `.github/workflows/` | No |
 | **Project Context**: specification, generator and drift detection, used through `/context generate`, `/context inspect` and `/context drift` | `docs/`, `scripts/project-context/`, `templates/project-context/`, `.claude/commands/context.md`, `.github/prompts/context.prompt.md` | Spec, template and (Claude Code) the `/context` command |
 | **Evals** | `evals/` | No (Hub development) |
+
+## Workflows
+
+Seven engineering workflows (plus pr-intelligence) are started by a command or by name: `/feature`, `/bug-fix`, `/api-change`, `/database-change`, `/e2e`, `/pr-prep` and `/incident`. They share one architecture (requirement, context check, system analysis, agent, skills, implementation or investigation, testing, change intelligence, code review, PR preparation, PR intelligence, validation) where not every workflow uses every stage, and skills are selected dynamically from evidence. See [Workflows](docs/workflows.md), [Workflow Common Guidance](docs/workflow-common.md) and the [Workflow Registry](docs/workflow-registry.md). Workflow commands do not authorize migrations, deployments, merges or production changes. No Grafana MCP is used in this phase.
 
 ## Plugin Structure
 

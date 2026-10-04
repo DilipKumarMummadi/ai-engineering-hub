@@ -35,7 +35,44 @@ Skill
 Validation
 ```
 
-A workflow may call an agent directly when no command fits the stage. Commands may also be entry points into workflows where appropriate. Today, workflows are started by name, for example "run the bug-fix workflow". A future command may start a workflow. Existing commands such as `/review` and `/incident` still route to a single agent.
+A workflow may call an agent directly when no command fits the stage. Six workflow commands start a workflow directly: `/feature`, `/bug-fix`, `/api-change`, `/database-change`, `/e2e` and `/pr-prep`. `/incident` starts the production-incident workflow through `production-incident-agent`, and `/pr-intelligence` and `/review-pr` start the pr-intelligence workflow. A workflow can also be started by name, for example "run the bug-fix workflow". Other commands such as `/review` still route to a single agent.
+
+## Common Architecture
+
+All workflows share one shape. Not every workflow uses every stage; the ones that do not apply are skipped with a recorded reason.
+
+```
+Requirement / Trigger
+  -> Context Check
+  -> Existing System Analysis
+  -> Agent
+  -> Skills
+  -> Implementation / Investigation
+  -> Testing
+  -> Change Intelligence
+  -> Code Review
+  -> PR Preparation
+  -> PR Intelligence
+  -> Validation / Decision
+```
+
+Reusable mechanics live in [Workflow Common Guidance](workflow-common.md): context loading, requirement loading, evidence classification, MCP capability detection, the testing, change intelligence, code review and PR preparation stages, final validation, the output contract (Objective, Context, Evidence, Plan, Actions, Validation, Findings, Risks, Unknowns, Recommendation), workflow states (ANALYZING, PLAN_READY, IMPLEMENTING, VALIDATING, NEEDS_INFORMATION, NEEDS_HUMAN_APPROVAL, FAILED, COMPLETED), human checkpoints, safety and failure reporting.
+
+**Dynamic skill routing.** Workflows do not run a fixed list of skills. The agent at each stage selects skills from the evidence (changed files, risk, kind of change) and skips the rest. The routing rules are in [Workflow Common Guidance](workflow-common.md).
+
+**No Grafana MCP in this phase.** Observability-backed evidence (logs, metrics, traces) is used only when the user supplies it or an existing capability provides it. Grafana MCP is not part of Phase 4.
+
+## Feature Development Lifecycle
+
+`feature-development` is the most comprehensive workflow. It runs a 14-stage lifecycle: 1 Requirement, 2 Understand Repository, 3 Project Context, 4 Existing System Analysis, 5 Architecture/Design, 6 Implementation Plan, 7 Implementation, 8 Testing, 9 Security Review, 10 Change Intelligence, 11 Code Review, 12 PR Preparation, 13 PR Intelligence, 14 Final Validation. Irrelevant stages are skipped with a recorded reason.
+
+- **Requirements** are classified Confirmed, Inferred or Unknown. Unknown requirements are asked about, not guessed.
+- **Human checkpoints:** PLAN READY, IMPLEMENTATION READY, VALIDATION READY and PR READY. Significant architectural, destructive database, security-sensitive, infrastructure, production-impacting and broad or refactoring changes also need explicit user confirmation. Planning is never authorization, and migrations and deployments are never run.
+- **Capabilities** (`source-control`, `requirements-tracking`, `database`, `browser-automation`, `cloud-platform`) are optional. Unavailable ones are reported, for example "Jira MCP is not configured, so requirement-level validation could not be performed."
+- **Failures** are reported with the stage, failure, evidence, likely cause, what continues and what is blocked.
+- **Final readiness** is READY, NEEDS_CHANGES or NEEDS_INFORMATION, corresponding to Ready, Needs Changes and Needs Information in the [PR Intelligence Specification](pr-intelligence-specification.md). Failing tests never give READY.
+
+See the [feature-development workflow](../.claude/workflows/feature-development.md) and its [evaluations](../evals/workflows/feature-development/README.md).
 
 ## Workflows vs Agents
 
@@ -62,6 +99,23 @@ Each stage receives the user's request, the constraints, and the results of the 
 ## How Workflows Use Skills
 
 Workflows apply skills mostly **through their agents**. A workflow names a skill directly only when a stage needs it and no agent covers it, for example applying `security` to a trust-boundary change or `playwright` to locator choice. A workflow lists only the skills its stages call for and does not run skills for completeness.
+
+## Phase 4 Workflow Summaries
+
+Each workflow has a full definition (purpose, inputs, stages, decision points, safety, output, handoff). All seven keep the `Project Context` section and add no context stage. Common checkpoints, states and failure reporting are in [Workflow Common Guidance](workflow-common.md). Stages below are summaries.
+
+| Workflow | Objective | Trigger | Inputs | Stages (summary) | Agents | Skills | MCP capabilities | Outputs | Safety | Human checkpoints | Failure handling |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [feature-development](../.claude/workflows/feature-development.md) | A new feature, validated and ready for PR | `/feature` | Requirement or ticket, constraints, acceptance criteria | Requirement, repository, context check, existing system analysis, design, plan, implementation, testing, security, change intelligence, review, PR prep, PR intelligence, final validation | architecture, api-development, database-troubleshooting, change-intelligence, test-planning, pr-review, pr-intelligence | By evidence: architecture, testing, code-review, change-intelligence, security, database-sql, performance, reliability, playwright | `requirements-tracking`, `source-control`, `database`, `browser-automation`, `cloud-platform`, all optional | Validated change, tests, review, PR summary, READY / NEEDS_CHANGES / NEEDS_INFORMATION | No migrations or deployments run; planning is not authorization | PLAN READY, IMPLEMENTATION READY, VALIDATION READY, PR READY | Stage, failure, evidence, cause, what continues, what is blocked |
+| [bug-fix](../.claude/workflows/bug-fix.md) | A defect fixed on a confirmed root cause | `/bug-fix` | Symptom, errors, logs, reproduction | Capture symptom, reproduce, evidence, investigate, confirm root cause, minimal fix plan, fix, regression test, review, validate | bug-investigation, test-planning, pr-review, change-intelligence | debugging, testing, plus observability, database-sql, performance, security, playwright when evidence points there | `requirements-tracking`, `source-control` optional | Root cause, minimal fix, regression test, validation evidence | No fix before the cause is supported; no production changes | Root cause confirmed before the fix; fix go-ahead | Unconfirmed cause is reported, not fixed around |
+| [api-change](../.claude/workflows/api-change.md) | A new or changed API with a compatibility decision | `/api-change` | API requirement, consumers, constraints | Requirement, existing API, contract design, compatibility, security, persistence, implementation, testing, documentation, review, validation | api-development, database-troubleshooting, change-intelligence, test-planning, pr-review | api-development, security, testing, code-review; database-sql, performance, reliability when needed | `requirements-tracking`, `source-control` optional | Contract, compatibility decision, tests, docs | Breaking changes need an explicit decision; unknown consumers reported | Contract and compatibility decision; implementation go-ahead | Unknown consumers and failed tests block a READY result |
+| [database-change](../.claude/workflows/database-change.md) | A schema, data or query change with a rollback plan | `/database-change` | Change, engine, environment, data volume | Requirement, schema and data analysis, migration design, query impact, performance, concurrency, security, implementation, validation, rollback, review | database-troubleshooting, change-intelligence, test-planning, pr-review | database-sql, security, reliability, performance, testing | `database` (read-only), `requirements-tracking` optional | Migration scripts (not run), rollback plan, validation on a disposable database | Migrations are never applied to shared or production systems; destructive statements need explicit authorization | Migration and rollback plan; implementation go-ahead | Missing database access is reported; no fabricated results |
+| [e2e-test-creation](../.claude/workflows/e2e-test-creation.md) | A reliable browser test, or a recommended lower-level test | `/e2e` | User flow, environment, test data, authentication | Flow, preconditions, data, locators, assertions, authentication, implementation, run, investigate failures, stabilize, validate | test-planning, bug-investigation, pr-review | testing, playwright, debugging | `browser-automation` optional | Test file, run evidence, or a lower-level recommendation | Runs only against environments the user names; no real data or credentials in tests | Test level decision; implementation go-ahead | A test that was not run is reported as not run; flaky tests are not reported as stable |
+| [pr-preparation](../.claude/workflows/pr-preparation.md) | A finished change prepared for a reviewable PR | `/pr-prep` | Branch or diff, requirement, test results | Understand change, review diff, tests, security, performance, architecture, documentation, validation, PR summary, final review | pr-review, change-intelligence, test-planning, architecture | code-review, testing, change-intelligence, security, performance, architecture (only as the change requires) | `source-control`, `requirements-tracking` optional | PR title and description, reviewer notes, open risks | Does not push, open, approve or merge | Summary and PR READY confirmation | Unrun validation is reported, not assumed passing |
+| [production-incident](../.claude/workflows/production-incident.md) | A stabilized, explained and followed-up incident |
+| [pr-intelligence](../.claude/workflows/pr-intelligence.md) | A readiness decision for a complete proposed change | `/incident` | Incident description, impact, timeline, logs, metrics | Detect, impact, stabilize, evidence, timeline, investigate, validate hypothesis, recover, confirm recovery, root cause, prevention, follow-up | production-incident, bug-investigation, database-troubleshooting, architecture | debugging, observability, reliability; performance, database-sql, security when evidence calls | `database`, `cloud-platform` read-only; no Grafana MCP in this phase | Impact, timeline, evidence by class, recovery confirmation, prevention list | No rollback, restart, scaling, failover, flag, configuration or data change without explicit authorization | Mitigation authorization before recovery | Observed, hypothesis and confirmed are kept apart; recovery is claimed only with evidence |
+
+The existing [pr-intelligence](../.claude/workflows/pr-intelligence.md) workflow (`/pr-intelligence`, `/review-pr`) is analysis only and recommends, never approves or merges.
 
 ## Available Workflows
 
@@ -112,7 +166,7 @@ A workflow is never reported as completed unless its required stages actually co
 
 ## External Capabilities
 
-Workflows may use capabilities when a provider is connected, and continue without them when not. The feature-development, bug-fix, api-change, database-change and pr-preparation workflows can use `requirements-tracking`; e2e-test-creation can use `browser-automation`; production-incident can use `database` and `cloud-platform`. A missing provider never fails a workflow: the limitation is reported. Flow: User → Command/Workflow → Agent → Skill → Capability → Existing MCP provider → External system. See the [MCP Capability Registry](mcp-capability-registry.md).
+Workflows may use capabilities when a provider is connected, and continue without them when not. The feature-development workflow can use all five capabilities (`source-control`, `requirements-tracking`, `database`, `browser-automation`, `cloud-platform`) when connected. The feature-development, bug-fix, api-change, database-change and pr-preparation workflows can use `requirements-tracking`; e2e-test-creation can use `browser-automation`; production-incident can use `database` and `cloud-platform`. A missing provider never fails a workflow: the limitation is reported. Flow: User → Command/Workflow → Agent → Skill → Capability → Existing MCP provider → External system. See the [MCP Capability Registry](mcp-capability-registry.md).
 
 ## Location
 
