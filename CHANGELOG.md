@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## 1.2.0 - 2026-10-04
+
+### Added
+- The 10 agents are now packaged in the plugin for GitHub Copilot / VS Code: a generated copy in `com.github.copilot/agents/<name>.agent.md` (source stays `.github/agents/`). Installing the plugin makes them available without cloning the Hub. `validate_plugin.py --sync` regenerates them and the validator fails on missing, stray or drifted copies and on links that do not resolve.
+
+### Fixed
+- The bundled PostgreSQL MCP server failed to start because `postgres-mcp` 0.3.0 does not pin `mcp` and resolved to `mcp` 2.x (`No module named 'mcp.server.fastmcp'`). The server is now started with `--with mcp~=1.0`.
+
 ## 1.1.0 - 2026-10-04
 
 ### Changed

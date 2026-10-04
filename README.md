@@ -35,7 +35,7 @@ ai-engineering-hub/
 ├── skills/<name>/SKILL.md   # portable skills (copy of .claude/skills, validator-enforced)
 ├── mcp.json                 # existing MCP servers to connect (no credentials)
 ├── .claude-plugin/          # Claude Code install + MCP bridge
-├── com.github.copilot/      # Copilot namespace (documentation only for now)
+├── com.github.copilot/      # Copilot namespace: agents/<name>.agent.md (generated from .github/agents)
 ├── docs/                    # specifications, including plugin-architecture.md
 ├── .claude/  .github/       # native Claude Code / Copilot resources (unchanged)
 └── evals/  scripts/  templates/   # Hub development tooling, not plugin runtime content
@@ -45,7 +45,7 @@ See [Plugin Architecture](docs/plugin-architecture.md) and the general [Architec
 
 ## Install and Use
 
-- **Agent Plugins clients:** install the plugin from this repository (`https://github.com/DilipKumarMummadi/ai-engineering-hub`); the client discovers `skills/*/SKILL.md`.
+- **Agent Plugins clients:** install the plugin from this repository (`https://github.com/DilipKumarMummadi/ai-engineering-hub`); the client discovers `skills/*/SKILL.md` and, for GitHub Copilot / VS Code, the 10 agents in `com.github.copilot/agents/`.
 - **Claude Code / GitHub Copilot, directly:** clone the repository. `.claude/` and `.github/` are used natively, including agents, commands and workflows.
 
 ## Generate Project Context for Your Repository

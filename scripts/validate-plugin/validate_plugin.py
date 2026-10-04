@@ -32,6 +32,9 @@ AUTHOR_ALLOWED = {"name", "email", "url"}
 NAME_RE = re.compile(r"^(?!.*(?:--|\.\.))[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?$")
 SEMVER_RE = re.compile(r"^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$")
 SOURCE = ".claude/skills"
+AGENT_SOURCE = ".github/agents"
+AGENT_DEST = "com.github.copilot/agents"
+AGENT_SUFFIX = ".agent.md"
 # Directories that are part of the distributable package. Everything else at the repo root is Hub development tooling.
 PACKAGED = ("skills", "com.github.copilot")
 FORBIDDEN_NAMES = {"PROJECT-CONTEXT.md", ".env", "node_modules", ".git", "coverage", "dist", "build", "__pycache__"}
@@ -41,6 +44,16 @@ MCP_TYPES = {"stdio", "streamable-http", "sse"}
 # Portable mcp.json is static definitions only. Credentials and connection details come from the client at runtime,
 # so the file may not carry `headers` or `env` at all. (Client-specific wiring lives in .claude-plugin/plugin.json.)
 FORBIDDEN_SUFFIX = (".pem", ".key", ".pfx", ".p12", ".log", ".pyc")
+
+
+def agent_copy(text: str) -> str:
+    """Packaged form of an agent: the only differences are the two path rewrites its new location needs.
+
+    From com.github.copilot/agents/ the skills live at ../../skills (not ../skills); docs stay at ../../docs,
+    and sibling agents gain the .agent.md suffix that plugin clients discover.
+    """
+    text = text.replace("](../skills/", "](../../skills/")
+    return re.sub(r"\]\(([a-z0-9-]+-agent)\.md", r"](\1" + AGENT_SUFFIX, text)
 
 
 def validate(root: Path) -> list[str]:
@@ -136,6 +149,34 @@ def validate(root: Path) -> list[str]:
             target = (skills_dir / n / link).resolve()
             if not target.exists() or skills_dir.resolve() not in target.parents:
                 fail(f"skills/{n}: link {link} must resolve inside skills/")
+
+    # 8a: Copilot agents are a generated copy of AGENT_SOURCE and every link in them must resolve
+    src_agents = root / AGENT_SOURCE
+    dst_agents = root / AGENT_DEST
+    if src_agents.is_dir():
+        want = {p.stem + AGENT_SUFFIX: agent_copy(p.read_text(encoding="utf-8")) for p in sorted(src_agents.glob("*.md"))}
+        have = {p.name: p for p in sorted(dst_agents.iterdir())} if dst_agents.is_dir() else {}
+        for n in sorted(set(want) - set(have)):
+            fail(f"{AGENT_DEST}/{n}: missing (run with --sync)")
+        for n in sorted(set(have) - set(want)):
+            fail(f"{AGENT_DEST}/{n}: stray file; it has no source in {AGENT_SOURCE}")
+        for n in sorted(set(want) & set(have)):
+            text = have[n].read_text(encoding="utf-8")
+            if text != want[n]:
+                fail(f"{AGENT_DEST}/{n}: differs from {AGENT_SOURCE} (run with --sync)")
+            fm = re.match(r"^---\n(.*?)\n---\n", text, re.S)
+            fields = dict(re.findall(r"^([a-z-]+):\s*(.+)$", fm.group(1), re.M)) if fm else {}
+            if fields.get("name") != n[: -len(AGENT_SUFFIX)]:
+                fail(f"{AGENT_DEST}/{n}: frontmatter name must equal the file name without .agent.md")
+            if not fields.get("description"):
+                fail(f"{AGENT_DEST}/{n}: frontmatter description missing")
+            for m in re.finditer(r"\]\(([^)#\s]+)(#[^)]*)?\)", re.sub(r"```.*?```", "", text, flags=re.S)):
+                link = m.group(1)
+                if link.startswith(("http", "mailto")):
+                    continue
+                target = (dst_agents / link).resolve()
+                if not target.exists() or root.resolve() not in target.parents:
+                    fail(f"{AGENT_DEST}/{n}: link {link} does not resolve inside the package")
 
     # 9-12/16: forbidden content inside the packaged directories and at the package root
     packaged = [root / "plugin.json", root / "README.md", root / "mcp.json", *(root / ".claude-plugin").glob("*.json")]
@@ -249,12 +290,19 @@ def sync(root: Path) -> None:
         if (p / "SKILL.md").is_file():
             (dst / p.name).mkdir(parents=True)
             shutil.copy2(p / "SKILL.md", dst / p.name / "SKILL.md")
+    agents = root / AGENT_DEST
+    if agents.exists():
+        shutil.rmtree(agents)
+    if (root / AGENT_SOURCE).is_dir():
+        agents.mkdir(parents=True)
+        for p in sorted((root / AGENT_SOURCE).glob("*.md")):
+            (agents / (p.stem + AGENT_SUFFIX)).write_text(agent_copy(p.read_text(encoding="utf-8")), encoding="utf-8")
 
 
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--root", type=Path, default=HERE.parents[1])
-    ap.add_argument("--sync", action="store_true", help="refresh skills/ from .claude/skills before validating")
+    ap.add_argument("--sync", action="store_true", help="refresh skills/ from .claude/skills and com.github.copilot/agents from .github/agents before validating")
     a = ap.parse_args()
     if a.sync:
         sync(a.root)
@@ -262,7 +310,8 @@ def main() -> int:
     for e in errs:
         print(f"  - {e}")
     n = len(list((a.root / "skills").glob("*/SKILL.md"))) if (a.root / "skills").is_dir() else 0
-    print(f"checked: plugin.json, {n} skills, package contents")
+    na = len(list((a.root / AGENT_DEST).glob("*" + AGENT_SUFFIX))) if (a.root / AGENT_DEST).is_dir() else 0
+    print(f"checked: plugin.json, {n} skills, {na} agents, package contents")
     print("OK" if not errs else f"{len(errs)} problem(s)")
     return 1 if errs else 0
 

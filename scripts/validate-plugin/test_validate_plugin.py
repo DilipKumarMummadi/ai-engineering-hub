@@ -13,7 +13,7 @@ REPO = Path(__file__).resolve().parents[2]
 
 def make_copy() -> Path:
     tmp = Path(tempfile.mkdtemp())
-    for rel in ("plugin.json", "README.md", "mcp.json", ".claude-plugin", "skills", ".claude/skills", ".claude/commands/context.md", ".claude/commands/review-pr.md", ".claude/commands/requirement.md", ".claude/agents/pr-intelligence-agent.md", ".claude/agents/requirement-intelligence-agent.md", "docs/plugin-architecture.md", "com.github.copilot"):
+    for rel in ("plugin.json", "README.md", "mcp.json", ".claude-plugin", "skills", ".claude/skills", ".claude/commands/context.md", ".claude/commands/review-pr.md", ".claude/commands/requirement.md", ".claude/agents/pr-intelligence-agent.md", ".claude/agents/requirement-intelligence-agent.md", "docs", "com.github.copilot", ".github/agents"):
         s, d = REPO / rel, tmp / rel
         d.parent.mkdir(parents=True, exist_ok=True)
         shutil.copytree(s, d) if s.is_dir() else shutil.copy2(s, d)
@@ -184,6 +184,36 @@ class PluginTests(unittest.TestCase):
         (self.root / "com.github.copilot/evals").mkdir()
         (self.root / "com.github.copilot/evals/a.md").write_text("x")
         self.assertTrue(self.has("must not be packaged"))
+
+    def test_agents_packaged(self):
+        names = sorted(f.name for f in (self.root / "com.github.copilot/agents").glob("*.agent.md"))
+        self.assertEqual(len(names), len(list((self.root / ".github/agents").glob("*.md"))))
+        self.assertIn("pr-intelligence-agent.agent.md", names)
+
+    def test_agent_missing(self):
+        (self.root / "com.github.copilot/agents/pr-review-agent.agent.md").unlink()
+        self.assertTrue(self.has("missing (run with --sync)"))
+
+    def test_agent_drift(self):
+        f = self.root / "com.github.copilot/agents/pr-review-agent.agent.md"
+        f.write_text(f.read_text() + "\nchanged")
+        self.assertTrue(self.has("differs from .github/agents"))
+
+    def test_agent_stray(self):
+        (self.root / "com.github.copilot/agents/extra.agent.md").write_text("---\nname: extra\ndescription: x\n---\n")
+        self.assertTrue(self.has("stray file"))
+
+    def test_agent_links_use_packaged_paths(self):
+        text = (self.root / "com.github.copilot/agents/pr-review-agent.agent.md").read_text()
+        self.assertNotIn("](../skills/", text)
+        self.assertIn("](../../skills/", text)
+        self.assertNotIn("-agent.md)", text)
+
+    def test_agent_broken_link_in_source(self):
+        src = self.root / ".github/agents/pr-review-agent.md"
+        src.write_text(src.read_text() + "\n[gone](../../docs/does-not-exist.md)\n")
+        vp.sync(self.root)
+        self.assertTrue(self.has("does not resolve inside the package"))
 
 
 if __name__ == "__main__":
