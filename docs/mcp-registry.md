@@ -4,7 +4,7 @@ The MCP servers the Hub knows about. The Hub builds none of them. A server is li
 
 | MCP | Purpose | Transport | Bundled in `mcp.json` | Access mode | Runtime configuration (supplied by the client, never the repo) |
 | --- | --- | --- | --- | --- | --- |
-| GitHub | Repositories, PRs, diffs, commits, issues | Remote HTTP | Yes | Read-only endpoint (`/mcp/readonly`) | Client-managed authentication. See [Claude Code](mcp-clients/claude-code.md) and [GitHub Copilot](mcp-clients/github-copilot.md) |
+| GitHub | Repositories, PRs, diffs, commits, issues | Remote HTTP | Yes | Read-only endpoint (`/mcp/readonly`) | Client-managed authentication. Claude Code optionally prompts for a token at install; empty falls back to your own GitHub MCP. See [Claude Code](mcp-clients/claude-code.md) and [GitHub Copilot](mcp-clients/github-copilot.md) |
 | Atlassian (Jira, Confluence) | Tickets, requirements, acceptance criteria | Remote HTTP | Yes | Per the user's Atlassian permissions | OAuth sign-in through the client |
 | PostgreSQL | Schema, plans, read-only queries | Local stdio (`uvx`) | Yes | Read-only (`--access-mode=restricted`) | Team and environment connection, from the user's runtime or secret store; never in the Hub |
 | Playwright | Browser automation and inspection | Local stdio (`npx`) | Yes | Drives a local browser | None; needs Node.js |

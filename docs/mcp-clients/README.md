@@ -4,7 +4,7 @@ How each client supplies the runtime configuration that the portable `mcp.json` 
 
 | Client | Page | Loads the plugin's `mcp.json` | GitHub authentication | Local server environment |
 | --- | --- | --- | --- | --- |
-| Claude Code | [claude-code.md](claude-code.md) | Yes, through `.claude-plugin/plugin.json` | Token prompted on enable, kept in the credential store | Reads variables set in the launching shell (not separately verified) |
+| Claude Code | [claude-code.md](claude-code.md) | Yes, through `.claude-plugin/plugin.json` | Optional install-time inputs for GitHub, Atlassian and PostgreSQL; empty falls back to your own client/shell configuration | Reads variables set in the launching shell (not separately verified) |
 | GitHub Copilot CLI | [github-copilot.md](github-copilot.md) | Yes | Built-in GitHub server (documented) | Only `PATH` is inherited; other values go in the client's config |
 | GitHub Copilot in VS Code, other Agent Plugins clients | Not covered | Not tested | Not tested | Not tested |
 

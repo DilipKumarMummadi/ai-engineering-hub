@@ -19,7 +19,7 @@ The unmodified package passes. Each change is rejected with a message naming the
 - Only the five intended servers are configured (GitHub, Atlassian, Figma, Postgres, Playwright); GitHub and Postgres are read-only, and npx/uvx packages are version-pinned. No observability MCP is configured; it is deferred to a later phase.
 - The portable `mcp.json` has no `env` or `headers`; runtime configuration is documented per client.
 - No credential value appears anywhere in the package.
-- `plugin.json` has no `mcpServers` or `userConfig`; Claude Code reaches `mcp.json` through `.claude-plugin/plugin.json`, where the only token is the documented Claude Code-only sensitive `github_token` option, never present in the root `plugin.json` or `mcp.json`.
+- `plugin.json` has no `mcpServers` or `userConfig`; Claude Code reaches `mcp.json` through `.claude-plugin/plugin.json`, which references `./mcp.json` plus overrides for `github`, `atlassian` and `postgres`. Its only credential inputs are optional, sensitive `userConfig` options (`github_token`, `atlassian_auth`, `postgres_database_uri`) referenced as `${user_config.KEY}`; no literal credential appears. Leaving an input empty falls back to the user's own client or shell configuration.
 
 # Failure Conditions
 

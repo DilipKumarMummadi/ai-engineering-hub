@@ -16,11 +16,36 @@ Layer 3  Team / repository / environment   which project, database and environme
 | MCP client | Sign-in state, OAuth sessions, tokens in the client's credential store, the user's enabled servers, named per-environment entries | Anything committed to the Hub repository |
 | Team / repository / environment | Which Jira project, which database and environment, which application URL, applied in each user's client; references to a secret store | Shared secrets in a committed file, chat or prompt |
 
-Agent Plugins 1.0.0 defines no portable mechanism for user secrets or arbitrary variables. The Hub therefore does not pretend to offer one: root `plugin.json` has no `mcpServers` and no `userConfig`, and `mcp.json` has no `env` or `headers`. Anything a client adds beyond the specification lives in that client's own files, documented under [MCP clients](mcp-clients/README.md).
+Agent Plugins 1.0.0 defines no portable mechanism for user secrets or arbitrary variables. The Hub therefore does not pretend to offer one: root `plugin.json` has no `mcpServers` and no `userConfig`, and `mcp.json` has no `env` or `headers`. `.claude-plugin/plugin.json` is the one place a credential input exists: see the documented exception below. Anything a client adds beyond the specification lives in that client's own files, documented under [MCP clients](mcp-clients/README.md).
 
-### Documented exception: Claude Code GitHub token
+### Documented exception: Claude Code install-time inputs
 
-`.claude-plugin/plugin.json` is Claude Code-only. It keeps a `userConfig.github_token` option and an `Authorization` header for the `github` server, so Claude Code can prompt for a token and keep it in its credential store. This is a client-specific feature, not portable, and not part of Agent Plugins. It is approved as a documented exception and must never appear in the root `plugin.json` or in `mcp.json`. The token is a user-supplied value held by Claude Code; the Hub does not read it. Other clients use their own mechanism, or none.
+`.claude-plugin/plugin.json` is Claude Code-only. It declares three optional, sensitive `userConfig` options (`github_token`, `atlassian_auth`, `postgres_database_uri`) and an inline override per server that substitutes each into an `Authorization` header or, for PostgreSQL, into an environment variable of a `sh -c` wrapper. Claude Code prompts for them when the plugin is enabled and keeps them in its credential store. This is a client-specific feature, not portable, and not part of Agent Plugins. It is approved as a documented exception and must never appear in the root `plugin.json` or in `mcp.json`. The values are user-supplied and held by Claude Code; the Hub does not read them. The validator rejects literal credentials, non-sensitive options, `${...}` expansion in the wrapper, and any override that changes the server's URL, type or pinned command.
+
+**Every input is optional, and leaving it empty falls back to local configuration:**
+
+| Server | Empty input |
+| --- | --- |
+| GitHub, Atlassian | The plugin's entry gets an empty credential and does not connect. Use your own user- or project-level server (or `/mcp` sign-in for Atlassian). The Hub finds whichever one the client exposes |
+| PostgreSQL | The wrapper uses `DATABASE_URI` from the launching shell, then your own PostgreSQL MCP entry |
+
+### Authentication ownership
+
+| Who | Owns |
+| --- | --- |
+| The user's client / runtime | Sign-in, OAuth sessions, tokens, connection strings, which servers are enabled, named per-environment entries, and the Claude Code install-time inputs above |
+| The MCP server's maintainer | How the server authenticates to its system |
+| The Hub | Nothing. It reads no token, stores none, and forwards none. The Claude Code inputs are passed by Claude Code to the server, not through the Hub |
+
+### Discovery, not configuration
+
+The Hub does not read any MCP configuration file and has no API to ask the host for one. Agent Plugins 1.0.0 defines no runtime MCP discovery interface, and the Hub must not scan `~/.config`, `~/.claude` or similar locations for servers or credentials. What an agent can legitimately observe is the set of **tools the host currently exposes to it**. The Hub discovers capabilities from that set, every time it is needed; see [Capability Resolution](mcp-capability-registry.md#capability-resolution).
+
+Consequences:
+
+- A server you already configured in your client is usable by the Hub as soon as the client exposes its tools. You configure it once, in the client.
+- A server you configure later is usable without reinstalling the Hub. Whether a session that is already running picks it up, or needs reconnecting or restarting, is client behavior; use the client's own MCP command (for example `/mcp` in Claude Code).
+- The Hub cannot see why a server is missing (never configured, signed out, failed to start). It can only say that no suitable tool is exposed and point to the client command that shows the server's status.
 
 ## Model
 
@@ -34,7 +59,8 @@ AI Engineering Hub
       |       +-- Playwright   +-- Figma
       |
       +-- .claude-plugin/plugin.json  Claude Code only: how it loads mcp.json
-                                      and prompts for the GitHub token
+                                      (optional install-time inputs for GitHub,
+                                      Atlassian and PostgreSQL; nothing stored here)
 
 Client / runtime configuration        never in the Hub repository
       +-- User credentials            GitHub, Atlassian, cloud identity
@@ -74,8 +100,8 @@ Whatever provider answers a capability, the Hub stays unaware of how it authenti
 | Kind | Servers | How |
 | --- | --- | --- |
 | OAuth through the client | Atlassian, Figma | The user signs in from the client. No token is handled by the Hub |
-| Client-managed token | GitHub | Claude Code prompts for a token and stores it in the system credential store (client-specific, see above). Copilot CLI has a built-in GitHub server. See the client pages |
-| Runtime environment / client config | PostgreSQL | Connection details from the user's environment or client configuration |
+| Client-managed token | GitHub | Claude Code prompts for an optional token and stores it in the credential store (client-specific, see above), or you use your own GitHub MCP. Copilot CLI has a built-in GitHub server. See the client pages |
+| Runtime environment / client config | PostgreSQL | Optional connection string entered at install (Claude Code), else `DATABASE_URI` from the user's environment or client configuration |
 | None | Playwright | Local runtime |
 | Cloud identity | Azure (not bundled) | The user's cloud sign-in |
 

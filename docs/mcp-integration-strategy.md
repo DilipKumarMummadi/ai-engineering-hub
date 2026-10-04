@@ -48,7 +48,7 @@ MCP is an integration mechanism, not another Hub intelligence layer. It supplies
 
 ## Capabilities and Deferred Scope
 
-Agents name a capability, never a server: `source-control`, `requirements-tracking`, `database`, `browser-automation`, `cloud-platform` (Azure, registered but not bundled). `design` (Figma) remains as an existing non-engineering capability. Observability MCP access is deferred to a later phase; the `observability` skill and incident reasoning over telemetry the user supplies are unchanged. The Hub builds no MCP server, implements no authentication and stores no credentials; the client owns authentication, credentials, OAuth and environment configuration. Setup: [MCP Setup Guide](mcp-setup-guide.md).
+Agents name a capability, never a server: `source-control`, `requirements-tracking`, `database`, `browser-automation`, `design` (Figma, optional, used as design evidence) and `cloud-platform` (Azure, registered but not bundled). Observability MCP access is deferred to a later phase; the `observability` skill and incident reasoning over telemetry the user supplies are unchanged. The Hub builds no MCP server, implements no authentication and stores no credentials; the client owns authentication, credentials, OAuth and environment configuration. Setup: [MCP Setup Guide](mcp-setup-guide.md).
 
 ## Example Integrations
 
@@ -61,6 +61,24 @@ Examples only. The Hub does not depend on any specific server, and availability 
 | Database | PostgreSQL | Schema, read-only queries, plans |
 | Browser automation | Playwright | Driving and inspecting a running application |
 | Cloud | Azure (not bundled) | Resource state, monitoring, infrastructure configuration |
+
+## MCP State Model
+
+"Installed", "configured", "connected" and "usable" are different facts, each with its own evidence. The Hub never infers one from another.
+
+| State | Meaning | Evidence | Owner |
+| --- | --- | --- | --- |
+| DOCUMENTED | Named in Hub documentation | A doc in this repository | Hub |
+| DECLARED | Has a static definition in the Hub's `mcp.json` (installing the plugin gives this and nothing more) | `mcp.json` | Hub |
+| CONFIGURED | The user's client has an entry for the server, from the plugin or the user's own configuration | Client configuration, as the client reports it | User / client |
+| CONNECTED | The client reports the server running and authenticated | Client status (`/mcp`, `claude mcp list`) | Client |
+| RUNTIME_VISIBLE | The server's tools are exposed to the agent in this session | The agent's own tool list | Client |
+| TOOL_AVAILABLE | The specific operation the task needs is among those tools | The agent's own tool list | Client |
+| CALLABLE | A real call of that tool returned a result | The call's result | Server / client |
+
+Rules: a plugin install is DECLARED, not CONNECTED. CONNECTED does not imply TOOL_AVAILABLE (a server may expose read tools only, or hide tools the user's permissions exclude). TOOL_AVAILABLE does not imply CALLABLE (permission, authentication or runtime errors still happen). Only a returned result proves CALLABLE, and only that call. An agent can observe RUNTIME_VISIBLE, TOOL_AVAILABLE and CALLABLE itself; CONFIGURED and CONNECTED it can only report if the client or the user tells it. Documentation and the capability registry establish DOCUMENTED and nothing beyond.
+
+Availability states, resolver and messages are in [Capability Resolution](mcp-capability-registry.md#capability-resolution).
 
 ## Usage Rules
 
@@ -162,7 +180,7 @@ The Agent Plugin packages Hub capabilities; MCP gives agents access to external 
 
 - **Portable:** `plugin.json` holds metadata only. `mcp.json` (Agent Plugins 1.0.0) holds static definitions of existing servers. Neither contains a credential, `env` or `headers`, and the specification defines no portable secret mechanism, so none is invented.
 - **Runtime:** who is connecting, to which database, with which secret, is supplied by the client, the user's environment or a secret store. See [Runtime Configuration](mcp-runtime-configuration.md).
-- **Client-specific:** anything beyond the specification lives in that client's files and is documented on its [client page](mcp-clients/README.md). The one such item is Claude Code's `userConfig.github_token` and GitHub `Authorization` header in `.claude-plugin/plugin.json`: a documented exception, not portable, and never in the root `plugin.json` or `mcp.json`.
+- **Client-specific:** anything beyond the specification lives in that client's files and is documented on its [client page](mcp-clients/README.md). The one credential-bearing item is Claude Code's optional install-time inputs in `.claude-plugin/plugin.json` (GitHub, Atlassian, PostgreSQL); the Hub never reads them, and empty falls back to the user's own configuration.
 
 The Hub bundles no MCP server implementation and runs no proxy to inject configuration. Servers in the [MCP Registry](mcp-registry.md) are maintained by their owners.
 

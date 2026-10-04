@@ -186,12 +186,25 @@ def _check_mcp(root: Path, name, manifest: dict, fail) -> None:
                 base = json.loads(mcp.read_text(encoding="utf-8")).get("mcpServers", {}) if mcp.is_file() else {}
                 declared = set(c.get("userConfig", {}))
                 for sname, s in part.items():
-                    if sname not in base or s.get("url") != base[sname].get("url") or s.get("type") != base[sname].get("type"):
+                    b = base.get(sname)
+                    if b is None or s.get("type") != b.get("type"):
+                        fail(f".claude-plugin/plugin.json: override '{sname}' must match a server in mcp.json (same type)")
+                        continue
+                    if b["type"] == "stdio":
+                        # Wrapper only: `sh -c` must end by exec'ing the exact pinned command and args from mcp.json.
+                        want = "exec " + " ".join([b["command"], *b.get("args", [])])
+                        script = (s.get("args") or ["", ""])[-1]
+                        if s.get("command") != "sh" or (s.get("args") or [None])[0] != "-c" or not script.endswith(want):
+                            fail(f".claude-plugin/plugin.json: override '{sname}' must be `sh -c '... {want}'` so the pinned server is unchanged")
+                        if re.search(r"\$\{", script) or re.search(r"(?i)(postgres(ql)?|https?)://\S+:\S+@", script):
+                            fail(f".claude-plugin/plugin.json: override '{sname}' script must not use ${{...}} expansion or embed a credential")
+                    elif s.get("url") != b.get("url"):
                         fail(f".claude-plugin/plugin.json: override '{sname}' must match a server in mcp.json (same type and url)")
-                    for h, v in (s.get("headers") or {}).items():
-                        m = re.fullmatch(r"(?:(?:Bearer|Basic) )?\$\{user_config\.([A-Za-z_][A-Za-z0-9_]*)\}", v) if isinstance(v, str) else None
-                        if not m or m.group(1) not in declared or not c["userConfig"][m.group(1)].get("sensitive"):
-                            fail(f".claude-plugin/plugin.json: override '{sname}' header '{h}' must be a ${{user_config.KEY}} of a sensitive userConfig option")
+                    for kind in ("headers", "env"):
+                        for h, v in (s.get(kind) or {}).items():
+                            m = re.fullmatch(r"(?:(?:Bearer|Basic) )?\$\{user_config\.([A-Za-z_][A-Za-z0-9_]*)\}", v) if isinstance(v, str) else None
+                            if not m or m.group(1) not in declared or not c["userConfig"][m.group(1)].get("sensitive"):
+                                fail(f".claude-plugin/plugin.json: override '{sname}' {kind[:-1] if kind=='env' else 'header'} '{h}' must be a ${{user_config.KEY}} of a sensitive userConfig option")
             elif part != "./mcp.json":
                 fail(".claude-plugin/plugin.json: mcpServers entries must be './mcp.json' or a per-server override object")
     elif mcp.is_file():

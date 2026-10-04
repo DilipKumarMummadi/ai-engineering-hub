@@ -1,6 +1,6 @@
 {
   "name": "ai-engineering-hub",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Reusable AI engineering skills for software development: code review, debugging, testing, architecture, API, database, security, performance, observability, reliability, change intelligence and requirement intelligence.",
   "author": {
     "name": "Dilip Kumar Mummadi"
@@ -16,6 +16,24 @@
         "headers": {
           "Authorization": "Bearer ${user_config.github_token}"
         }
+      },
+      "atlassian": {
+        "type": "streamable-http",
+        "url": "https://mcp.atlassian.com/v2/mcp",
+        "headers": {
+          "Authorization": "${user_config.atlassian_auth}"
+        }
+      },
+      "postgres": {
+        "type": "stdio",
+        "command": "sh",
+        "args": [
+          "-c",
+          "if [ -n \"$HUB_DATABASE_URI\" ]; then export DATABASE_URI=\"$HUB_DATABASE_URI\"; fi; exec uvx postgres-mcp==0.3.0 --access-mode=restricted"
+        ],
+        "env": {
+          "HUB_DATABASE_URI": "${user_config.postgres_database_uri}"
+        }
       }
     }
   ],
@@ -23,7 +41,19 @@
     "github_token": {
       "type": "string",
       "title": "GitHub token (optional)",
-      "description": "Optional. Token for the read-only GitHub MCP server, used only by Claude Code. Leave empty to skip GitHub. Stored in your system credential store, never in the repository.",
+      "description": "Optional. Token for the read-only GitHub MCP server, used only by Claude Code. Leave empty to use a GitHub MCP you already configured yourself. Stored in your system credential store, never in the repository.",
+      "sensitive": true
+    },
+    "atlassian_auth": {
+      "type": "string",
+      "title": "Atlassian Authorization header value (optional)",
+      "description": "Optional. Full Authorization header value for the Atlassian (Jira) MCP server, e.g. 'Basic <base64 of email:api_token>' or 'Bearer <service account key>'. Leave empty to sign in through /mcp or to use an Atlassian MCP you already configured yourself. Stored in your system credential store, never in the repository.",
+      "sensitive": true
+    },
+    "postgres_database_uri": {
+      "type": "string",
+      "title": "PostgreSQL connection string (optional)",
+      "description": "Optional. Connection string for the PostgreSQL MCP server (use a read-only database user). Leave empty to use DATABASE_URI from the shell that starts Claude Code, or a PostgreSQL MCP you already configured yourself. Stored in your system credential store, never in the repository.",
       "sensitive": true
     }
   },

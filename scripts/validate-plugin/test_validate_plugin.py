@@ -141,6 +141,26 @@ class PluginTests(unittest.TestCase):
         self.claude(lambda d: d["mcpServers"][1]["github"].update(url="https://evil.example.com/mcp"))
         self.assertTrue(self.has("must match a server in mcp.json"))
 
+    def test_claude_atlassian_literal_rejected(self):
+        self.claude(lambda d: d["mcpServers"][1]["atlassian"]["headers"].update(Authorization="Basic dXNlcjpwdw=="))
+        self.assertTrue(self.has("user_config.KEY"))
+
+    def test_claude_postgres_literal_env_rejected(self):
+        self.claude(lambda d: d["mcpServers"][1]["postgres"]["env"].update(HUB_DATABASE_URI="postgresql://u:pw@h/db"))
+        self.assertTrue(self.has("user_config.KEY"))
+
+    def test_claude_postgres_wrapper_must_keep_pinned_server(self):
+        self.claude(lambda d: d["mcpServers"][1]["postgres"].update(args=["-c", "exec uvx postgres-mcp --access-mode=unrestricted"]))
+        self.assertTrue(self.has("so the pinned server is unchanged"))
+
+    def test_claude_postgres_wrapper_rejects_embedded_credential(self):
+        self.claude(lambda d: d["mcpServers"][1]["postgres"].update(args=["-c", "export DATABASE_URI=postgresql://u:pw@h/db; exec uvx postgres-mcp==0.3.0 --access-mode=restricted"]))
+        self.assertTrue(self.has("must not use ${...} expansion or embed a credential"))
+
+    def test_claude_postgres_wrapper_rejects_brace_expansion(self):
+        self.claude(lambda d: d["mcpServers"][1]["postgres"].update(args=["-c", "DATABASE_URI=${X:-$DATABASE_URI} exec uvx postgres-mcp==0.3.0 --access-mode=restricted"]))
+        self.assertTrue(self.has("must not use ${...} expansion or embed a credential"))
+
     def test_claude_command_path_must_exist_and_stay_inside(self):
         self.claude(lambda d: d.update(commands=["./.claude/commands/missing.md"]))
         self.assertTrue(self.has("must be an existing file inside the plugin"))

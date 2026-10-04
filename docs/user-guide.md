@@ -322,7 +322,7 @@ The behavior is the same; the files differ.
 | Workflows | `.claude/workflows/` | `.github/workflows/` |
 | Skills | `.claude/skills/` and `skills/` | `.github/skills/` |
 | Plugin commands | `/ai-engineering-hub:<name>` for `context` and `review-pr` | Not applicable: the plugin's Copilot namespace is documentation only today |
-| GitHub access | Token prompted and stored by Claude Code, or a GitHub MCP you already have | Copilot CLI's built-in GitHub server |
+| GitHub access | Optional token at install (Claude Code), or a GitHub MCP in your own client | Copilot CLI's built-in GitHub server |
 | Database connection | Set `DATABASE_URI` in the shell that starts Claude Code | Must be set in Copilot's user-level `mcp-config.json`; your shell variables do not reach the server |
 
 Only Claude Code and GitHub Copilot CLI were exercised for MCP behavior. Other Copilot surfaces (VS Code, cloud agent) were not tested.
