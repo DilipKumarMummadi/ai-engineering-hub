@@ -28,14 +28,6 @@
         "-y",
         "@playwright/mcp@0.0.83"
       ]
-    },
-    "grafana": {
-      "type": "stdio",
-      "command": "uvx",
-      "args": [
-        "mcp-grafana==2.0.0",
-        "--disable-write"
-      ]
     }
   }
 }

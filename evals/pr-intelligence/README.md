@@ -56,3 +56,5 @@ Whether the agent decides PR readiness correctly: it understands the change firs
 | [insufficient-information](cases/insufficient-information.md) | Returns Needs Information and does not guess. |
 
 All cases are **not yet run**. Status is recorded in the [Agent Registry](../../docs/agent-registry.md). Pilot findings, with what was detected and missed, are in [pilot.md](pilot.md).
+
+PR retrieval through a connected source-control provider (`/review-pr`) is evaluated in [`mcp/`](mcp/README.md).

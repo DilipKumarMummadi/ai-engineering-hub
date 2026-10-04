@@ -28,3 +28,7 @@ Agents will live in the platform-native directories: `.claude/agents/` for Claud
 ## Naming
 
 Use lowercase kebab-case, for example `software-architect` or `test-engineer`.
+
+## Agents and External Capabilities
+
+Agents depend on capabilities such as `source-control`, not on particular MCP servers. For example, `pr-intelligence-agent` retrieves a pull request named by `/review-pr` through the `source-control` capability, which a connected provider such as the GitHub MCP supplies, and then applies the Hub's skills to the result. It never handles credentials, never assumes a provider is connected, and reports what it could not obtain. See the [MCP Capability Registry](mcp-capability-registry.md).

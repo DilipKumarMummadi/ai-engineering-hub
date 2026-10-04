@@ -174,6 +174,9 @@ def _check_mcp(root: Path, name, manifest: dict, fail) -> None:
         for cmd in ([c["commands"]] if isinstance(c.get("commands"), str) else c.get("commands", [])):
             if not isinstance(cmd, str) or not cmd.startswith("./") or not inside(root, root / cmd) or not (root / cmd).is_file():
                 fail(f".claude-plugin/plugin.json: commands entry {cmd!r} must be an existing file inside the plugin")
+        for ag in c.get("agents", []):
+            if not isinstance(ag, str) or not ag.startswith("./") or not ag.endswith(".md") or not inside(root, root / ag) or not (root / ag).is_file():
+                fail(f".claude-plugin/plugin.json: agents entry {ag!r} must be an existing .md file inside the plugin")
         ms = c.get("mcpServers")
         parts = ms if isinstance(ms, list) else ([ms] if ms is not None else [])
         if mcp.is_file() and "./mcp.json" not in parts:

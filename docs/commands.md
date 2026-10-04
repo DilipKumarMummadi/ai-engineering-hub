@@ -15,6 +15,8 @@ Command → Agent → Skills → Validation
 
 The engineering instructions live in the agents and skills. A command only names its agent and states how to pass the request.
 
+`/review-pr` is an entry variant of `/pr-intelligence`: the same agent, started from a pull request URL or number that the agent retrieves through the `source-control` capability.
+
 One command is different. [`/context`](#context-generate-inspect-drift) is a **tool command**: it runs the Hub's Project Context Generator on the repository you are working in instead of routing to an agent.
 
 ## Available Commands
@@ -28,6 +30,7 @@ One command is different. [`/context`](#context-generate-inspect-drift) is a **t
 | `/api` | api-development-agent | Design, implement, review or evolve an API |
 | `/database` | database-troubleshooting-agent | Investigate or design database and SQL behavior |
 | `/incident` | production-incident-agent | Investigate an active or recent production incident |
+| `/review-pr` | pr-intelligence-agent | Review a GitHub pull request by URL or number, using a connected source-control MCP |
 
 ## `/context`: Generate, Inspect, Drift
 
@@ -56,6 +59,17 @@ Claude Code: `/context ...` in the Hub repository, or `/ai-engineering-hub:conte
 **CLI status.** There is no global `ai-hub` executable, and none is faked. The generator's own entry point is `scripts/project-context/project-context` (`generate`, `update`, `drift`, `--dry-run`). A future `ai-hub context generate | inspect | drift` would wrap the same operations and is not implemented.
 
 **Developer instructions.** From inside your repository: run `/context generate --dry-run`, read the summary, run `/context generate`, review `PROJECT-CONTEXT.md` and commit it. Later, run `/context drift`, and `/context generate` when it reports material drift.
+
+## `/review-pr`
+
+```
+/review-pr https://github.com/org/repo/pull/123
+/review-pr 123            # the repository of the current directory
+```
+
+The command passes the reference to `pr-intelligence-agent`. The agent retrieves the pull request (metadata, commits, changed files, the diff, existing comments and checks, linked items) through the `source-control` capability, which the GitHub MCP provides when the client has it connected and signed in. It then applies change-intelligence, code-review and only the supporting skills the PR calls for, using the repository's Project Context when there is one, and returns a `# PR Review` ending in READY, NEEDS_CHANGES or NEEDS_INFORMATION.
+
+Authentication is entirely the client's. The command never asks for a token. Without a connected provider the agent says live PR information is unavailable and reviews a locally available diff if there is one. It never approves, merges, comments on or changes the pull request. Setup per client is in [MCP clients](mcp-clients/README.md). In Claude Code with the plugin installed, the command is `/ai-engineering-hub:review-pr`.
 
 ## Skills Used Indirectly
 
@@ -135,6 +149,7 @@ A command is a request to start work. It is not authorization to change anything
 
 - `/database` does not authorize `DELETE`, `UPDATE`, `DROP`, `TRUNCATE`, `ALTER` or any statement that changes data or schema. The database agent's safety rules still apply.
 - `/incident` does not authorize production changes such as rollback, restart, scaling, failover, feature flag or configuration changes, killing sessions or data changes. The incident agent proposes reversible mitigation and asks for authorization.
+- `/review-pr` does not authorize approvals, merges, comments or changes on the pull request, and never involves credentials.
 - `/review` does not authorize edits, merges, approvals, pushes or comments on a pull request.
 - `/context` modifies only `PROJECT-CONTEXT.md` of the target repository, only through the generator, and only for `generate`. It does not authorize editing source or configuration, commits, pushes or deployments, and it never reproduces a secret.
 - `/debug`, `/architecture`, `/test-plan` and `/api` do not authorize changes to code, data, configuration or infrastructure by themselves.

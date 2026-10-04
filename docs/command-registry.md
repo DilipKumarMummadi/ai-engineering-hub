@@ -27,9 +27,10 @@ Statuses are qualitative. There are no scores or rankings.
 | `/change-impact` | [`.claude/commands/change-impact.md`](../.claude/commands/change-impact.md) | [`.github/prompts/change-impact.prompt.md`](../.github/prompts/change-impact.prompt.md) | change-intelligence-agent | Analyze the engineering impact of a change | In Progress |
 | `/pr-intelligence` | [`.claude/commands/pr-intelligence.md`](../.claude/commands/pr-intelligence.md) | [`.github/prompts/pr-intelligence.prompt.md`](../.github/prompts/pr-intelligence.prompt.md) | pr-intelligence-agent | Assess whether a PR or change is ready | In Progress |
 
+| `/review-pr` | [`.claude/commands/review-pr.md`](../.claude/commands/review-pr.md) | [`.github/prompts/review-pr.prompt.md`](../.github/prompts/review-pr.prompt.md) | pr-intelligence-agent (shared with `/pr-intelligence`) | Review a GitHub PR by URL or number through the source-control capability | In Progress |
 | `/context` | [`.claude/commands/context.md`](../.claude/commands/context.md) | [`.github/prompts/context.prompt.md`](../.github/prompts/context.prompt.md) | None (tool command; runs the Project Context Generator) | Generate, inspect or check the current repository's Project Context | In Progress |
 
-All ten commands are In Progress because none of their evaluation cases has been run yet. Evaluation cases for the first seven are in [`evals/commands/`](../evals/commands/README.md). `/change-impact` and `/pr-intelligence` have no separate routing cases yet. They are exercised through [`evals/change-intelligence/`](../evals/change-intelligence/README.md) and [`evals/pr-intelligence/`](../evals/pr-intelligence/README.md).
+All eleven commands are In Progress because none of their evaluation cases has been run yet. Evaluation cases for the first seven are in [`evals/commands/`](../evals/commands/README.md). `/review-pr` is evaluated in [`evals/pr-intelligence/mcp/`](../evals/pr-intelligence/mcp/README.md). `/change-impact` and `/pr-intelligence` have no separate routing cases yet. They are exercised through [`evals/change-intelligence/`](../evals/change-intelligence/README.md) and [`evals/pr-intelligence/`](../evals/pr-intelligence/README.md).
 
 ## `/context` Operations
 

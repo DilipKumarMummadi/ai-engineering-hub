@@ -25,6 +25,10 @@ The Copilot CLI documentation states that `PATH` is inherited and that all other
 - Whether Copilot CLI expands variable references or reads a secret store for `env` values is **not documented**, so this page does not claim it. The value therefore sits in a user-only file; use a `SELECT`-only database role and a short-lived credential where you can.
 - Production: restricted mode and a `SELECT`-only role, both.
 
+## Reviewing a Pull Request with `/review-pr`
+
+Copilot CLI's built-in GitHub MCP server supplies the `source-control` capability (**Documented**). Use the `review-pr` prompt from `.github/prompts/`, which hands the request to `.github/agents/pr-intelligence-agent.md`; both must be available in the repository you are working in, because Copilot has no plugin root. The plugin does not expose the agent to Copilot. **Not tested** in Copilot.
+
 ## Limitations
 
 - No portable secret mechanism, and no Copilot-specific prompt equivalent to Claude Code's. Credentials must be set in Copilot's own user-level configuration.

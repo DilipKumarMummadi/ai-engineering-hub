@@ -8,7 +8,7 @@ Reusable AI engineering skills, agents, commands and workflows for software engi
 | --- | --- | --- |
 | **Skills** (13): code-review, debugging, testing, playwright, refactoring, architecture, api-development, database-sql, security, performance, observability, reliability, change-intelligence | `skills/` | Yes |
 | **Agents** (9): PR review, PR intelligence, bug investigation, change intelligence, test planning, API development, architecture, database troubleshooting, production incident | `.claude/agents/`, `.github/agents/` | No (client-specific) |
-| **Commands**: review, debug, test-plan, architecture, api, database, incident, change-impact, pr-intelligence | `.claude/commands/`, `.github/prompts/` | No |
+| **Commands**: review, debug, test-plan, architecture, api, database, incident, change-impact, pr-intelligence, review-pr, context | `.claude/commands/`, `.github/prompts/` | No |
 | **Workflows**: feature-development, bug-fix, api-change, database-change, pr-preparation, e2e-test-creation, production-incident, pr-intelligence | `.claude/workflows/`, `.github/workflows/` | No |
 | **Project Context**: specification, generator and drift detection, used through `/context generate`, `/context inspect` and `/context drift` | `docs/`, `scripts/project-context/`, `templates/project-context/`, `.claude/commands/context.md`, `.github/prompts/context.prompt.md` | Spec, template and (Claude Code) the `/context` command |
 | **Evals** | `evals/` | No (Hub development) |
@@ -48,6 +48,17 @@ From inside the repository you work on (not the Hub):
 
 In Claude Code with the plugin installed the command is `/ai-engineering-hub:context`. In GitHub Copilot use the `context` prompt and set `AI_HUB_HOME` to a Hub checkout. Review the file and commit it to your repository.
 
+## Review a GitHub Pull Request
+
+With a GitHub MCP connected and signed in in your client (see [MCP clients](docs/mcp-clients/README.md)), from the repository you work in:
+
+```
+/review-pr https://github.com/org/repo/pull/123
+/review-pr 123
+```
+
+The agent retrieves the PR through the `source-control` capability, uses the repository's Project Context if it has one, and returns a `# PR Review` with findings and a READY, NEEDS_CHANGES or NEEDS_INFORMATION recommendation. It never approves, merges or comments, and never asks for a token. See [MCP Capability Registry](docs/mcp-capability-registry.md).
+
 ## Project Context
 
 `PROJECT-CONTEXT.md` describes one repository, so it is never part of the plugin. Generate it in the repository where you use the Hub (`scripts/project-context/`, template in `templates/project-context/`); agents read it as orientation, not authority. See [Project Context](docs/project-context.md).
@@ -74,4 +85,4 @@ python3 scripts/validate-hub/validate_hub.py
 
 ## Documentation
 
-[Architecture](docs/architecture.md) · [Plugin Architecture](docs/plugin-architecture.md) · [MCP Integration](docs/mcp-integration-strategy.md) · [MCP Registry](docs/mcp-registry.md) · [MCP Clients](docs/mcp-clients/README.md) · [Skills](docs/skills.md) · [Agents](docs/agents.md) · [Workflows](docs/workflows.md) · [Contributing](CONTRIBUTING.md) · [Changelog](CHANGELOG.md)
+[Architecture](docs/architecture.md) · [Plugin Architecture](docs/plugin-architecture.md) · [MCP Integration](docs/mcp-integration-strategy.md) · [MCP Registry](docs/mcp-registry.md) · [MCP Capabilities](docs/mcp-capability-registry.md) · [MCP Clients](docs/mcp-clients/README.md) · [Skills](docs/skills.md) · [Agents](docs/agents.md) · [Workflows](docs/workflows.md) · [Contributing](CONTRIBUTING.md) · [Changelog](CHANGELOG.md)

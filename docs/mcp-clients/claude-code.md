@@ -42,6 +42,16 @@ claude mcp add --scope user postgres-uat -e DATABASE_URI='${PG_UAT_URI}' -- uvx 
 
 The single quotes stop your shell from expanding the variable at the time you add it. This command was **not tested**. Production entries use the same restricted flag and a `SELECT`-only database role.
 
+## Reviewing a Pull Request with `/review-pr`
+
+Setup, all done in the client:
+
+1. Install the plugin. It exposes `/ai-engineering-hub:review-pr` and the `pr-intelligence-agent` subagent.
+2. Enable the GitHub MCP for GitHub and sign in: either the plugin's own `github` server, which prompts for your token when the plugin is enabled (see above), or a GitHub MCP you already have at user level. The Hub does not care which, and never sees the token.
+3. Open your repository and run `/ai-engineering-hub:review-pr <PR URL or number>`.
+
+If GitHub is not connected or not signed in, the agent says live PR information is unavailable and reviews a local diff if there is one. Tested with a user-level GitHub MCP: the PR was retrieved and a review produced. The plugin's own prompted-token server was **not tested** for this flow.
+
 ## Limitations
 
 - The GitHub prompt and token substitution exist only in Claude Code.

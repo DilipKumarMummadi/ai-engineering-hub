@@ -13,7 +13,7 @@ REPO = Path(__file__).resolve().parents[2]
 
 def make_copy() -> Path:
     tmp = Path(tempfile.mkdtemp())
-    for rel in ("plugin.json", "README.md", "mcp.json", ".claude-plugin", "skills", ".claude/skills", ".claude/commands/context.md", "docs/plugin-architecture.md", "com.github.copilot"):
+    for rel in ("plugin.json", "README.md", "mcp.json", ".claude-plugin", "skills", ".claude/skills", ".claude/commands/context.md", ".claude/commands/review-pr.md", ".claude/agents/pr-intelligence-agent.md", "docs/plugin-architecture.md", "com.github.copilot"):
         s, d = REPO / rel, tmp / rel
         d.parent.mkdir(parents=True, exist_ok=True)
         shutil.copytree(s, d) if s.is_dir() else shutil.copy2(s, d)
@@ -146,6 +146,10 @@ class PluginTests(unittest.TestCase):
         self.assertTrue(self.has("must be an existing file inside the plugin"))
         self.claude(lambda d: d.update(commands=["./../outside.md"]))
         self.assertTrue(self.has("must be an existing file inside the plugin"))
+
+    def test_claude_agent_path_must_exist(self):
+        self.claude(lambda d: d.update(agents=["./.claude/agents/missing-agent.md"]))
+        self.assertTrue(self.has("agents entry"))
 
     def test_mcp_nested_config_rejected(self):
         (self.root / "skills/testing/.mcp.json").write_text("{}")

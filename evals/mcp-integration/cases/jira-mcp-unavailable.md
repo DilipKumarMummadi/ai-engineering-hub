@@ -8,7 +8,7 @@ No Jira MCP is connected.
 
 # Context
 
-No work-tracking MCP is available. A local diff and a short description from the user are provided.
+No requirements-tracking MCP is available. A local diff and a short description from the user are provided.
 
 # Expected Behavior
 

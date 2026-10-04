@@ -108,6 +108,34 @@ Which Hub capabilities may benefit from which external MCPs. Every row works wit
 | Feature development, API change | Jira, GitHub | architecture, api-development, testing, security |
 | Database change | Database MCP (non-production), cloud | database-sql, reliability, testing |
 
+## Runtime Flow: Reviewing a Pull Request
+
+`/review-pr` is the first complete workflow built on an existing MCP. The Hub asks for a capability, and the client's connected provider answers it:
+
+```
+User
+ ↓
+AI Engineering Hub  (/review-pr <PR URL or number>)
+ ↓
+PR Intelligence Agent
+ ↓
+source-control capability          (see MCP Capability Registry)
+ ↓
+GitHub MCP                         (one provider of it)
+ ↓
+GitHub authentication, handled by the MCP client
+ ↓
+GitHub PR
+ ↓
+PR data returned to the agent
+ ↓
+Hub skills analyze the data        (change-intelligence, code-review, and only the relevant others)
+```
+
+The Hub is unaware of how GitHub authenticates. It never requests, receives, stores or passes a token: it only sees the tools the client exposes and the results they return. If no provider is connected or signed in, the agent says live PR information is unavailable and reviews a local diff if one exists; it never asks for a credential and never invents PR data. The capability abstraction is in the [MCP Capability Registry](mcp-capability-registry.md).
+
+Project Context and repository evidence are combined with the PR data as the [consumption standard](project-context-consumption.md) says: repository evidence first, context as orientation, and the PR's own repository matters. If the PR belongs to a different repository than the one you are in, the local files and that repository's context are not treated as describing the PR.
+
 ## Where Each MCP Fits in Agents and Workflows
 
 Agents and workflows document the optional MCPs that could help them, in their Tool Usage section (agents) and after the Inputs table (workflows). That is documentation only. No agent or workflow contains MCP-specific logic, and none changes behavior when no MCP is connected.
@@ -115,7 +143,7 @@ Agents and workflows document the optional MCPs that could help them, in their T
 Example, PR Preparation:
 
 1. Obtain the PR and diff from a source-control MCP, if available.
-2. Obtain the requirement from a work-tracking MCP, if available.
+2. Obtain the requirement from a requirements-tracking MCP, if available.
 3. Use Project Context.
 4. Run change intelligence.
 5. Run code review.

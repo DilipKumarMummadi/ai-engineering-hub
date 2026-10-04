@@ -28,6 +28,10 @@
     }
   },
   "commands": [
-    "./.claude/commands/context.md"
+    "./.claude/commands/context.md",
+    "./.claude/commands/review-pr.md"
+  ],
+  "agents": [
+    "./.claude/agents/pr-intelligence-agent.md"
   ]
 }

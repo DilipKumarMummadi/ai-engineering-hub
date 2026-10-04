@@ -54,6 +54,10 @@ Only runtime configuration differs.
 | Environment | development, test, uat, production | One named client entry per environment |
 | Secret | Tokens, passwords, API keys, connection strings | A secret store or the client's credential store. **Never committed** |
 
+## The Hub Never Handles Credentials
+
+Whatever provider answers a capability, the Hub stays unaware of how it authenticates. In the `/review-pr` flow the agent asks for the `source-control` capability; the client's GitHub MCP authenticates as the signed-in user, and only PR data comes back. There is no code, prompt, command, skill or document in the Hub that reads, asks for, stores or forwards a GitHub token, OAuth token, password or session. A missing or expired sign-in is reported as "GitHub MCP is not configured or not signed in", and the fix (connecting and authenticating) happens in the client. See [MCP clients](mcp-clients/README.md).
+
 ## Authentication Strategy
 
 | Kind | Servers | How |

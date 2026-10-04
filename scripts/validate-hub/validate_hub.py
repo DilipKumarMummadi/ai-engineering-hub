@@ -104,6 +104,7 @@ def check_agents(skills):
     return agents
 
 
+ENTRY_VARIANTS = {"review-pr": "pr-intelligence"}  # a command that shares its base command's agent
 TOOL_COMMANDS = {"context"}  # run a Hub tool instead of routing to an agent
 TOOL_OPERATIONS = ("generate", "inspect", "drift")
 
@@ -150,7 +151,12 @@ def check_commands(agents):
             fail(f"commands/{name}", "tool command missing on a platform or structure differs between platforms")
     if routes.get("claude") != routes.get("github"):
         fail("commands", "platform routing differs")
-    if len(set(routes.get("claude", {}).values())) != len(routes.get("claude", {})):
+    claude_routes = routes.get("claude", {})
+    for variant, base in ENTRY_VARIANTS.items():
+        if variant in claude_routes and claude_routes[variant] != claude_routes.get(base):
+            fail(f"commands/{variant}", f"must route to the same agent as /{base}")
+    independent = {n: a for n, a in claude_routes.items() if n not in ENTRY_VARIANTS}
+    if len(set(independent.values())) != len(independent):
         fail("commands", "two commands route to the same agent")
     return routes.get("claude", {})
 
