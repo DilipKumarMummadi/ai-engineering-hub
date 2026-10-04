@@ -34,6 +34,8 @@ Produce a stable, meaningful Playwright test for a user flow and report honestly
 
 Missing inputs are identified and asked about, not invented. Credentials are never requested or stored; authentication belongs to the test environment and the MCP client.
 
+**Requirement readiness.** When a ticket key is supplied or the flow is a new requirement, the `requirement-intelligence-agent` (`/requirement`) checks what an end-to-end test needs: the user journey, preconditions, test data, authentication, expected states and assertions. The key is carried as the Requirement ID into the test and its report.
+
 **External sources (optional).** Capabilities per the [MCP Capability Registry](../../docs/mcp-capability-registry.md) and [MCP Integration Strategy](../../docs/mcp-integration-strategy.md); fallback rules are in [Workflow Common](../../docs/workflow-common.md).
 
 | Capability | Used for | Stage |

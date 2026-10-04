@@ -33,6 +33,8 @@ Deliver an API addition or change with a defined contract, known compatibility i
 
 Missing inputs are identified, not invented.
 
+**Requirement readiness.** When a ticket key is supplied or the request is a new requirement, the `requirement-intelligence-agent` (`/requirement`) assesses it first, weighting contract, expected behavior, compatibility, consumers, security and testing. Only `READY` lets the workflow continue to design. `NEEDS_CLARIFICATION` or `BLOCKED` stops it with the blocking questions. The key is carried as the Requirement ID through the contract, tests and PR. See the [Readiness Policy](../../docs/requirement-readiness-policy.md).
+
 **External sources (optional).** Detection and fallback, including the exact fallback sentences, are in [Workflow Common Guidance](../../docs/workflow-common.md#4-mcp-capability-detection-and-fallback).
 
 | Capability | Used for | Stage |

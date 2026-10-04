@@ -29,7 +29,7 @@ Take a new feature from a stated requirement to a validated, reviewable change. 
 | --- | --- | --- |
 | The feature requirement and intended outcome | Required | Supplied by the user, a local document or a ticket. |
 | Constraints: technology, deadline, scope, compatibility, prohibitions | Preferred | Carried unchanged into every stage. |
-| Ticket key or link | Optional | Used only if the user supplies it or reliable evidence shows it. |
+| Ticket key or link | Optional | Used only if the user supplies it or reliable evidence shows it. A key such as `BR-7368` becomes the Requirement ID and is carried through every stage, the PR description and PR intelligence. |
 | Acceptance criteria | Preferred | Derived with the user if absent. |
 | Security, performance or data sensitivity notes | Optional | |
 
@@ -39,7 +39,7 @@ Missing inputs are identified and asked about, not invented.
 
 | Capability | Used for | Stage |
 | --- | --- | --- |
-| `requirements-tracking` (for example Jira) | Summary, description, acceptance criteria, constraints, linked information | 1, 13 |
+| `requirements-tracking` (for example Jira) | Summary, description, acceptance criteria, constraints, linked information. A ticket write happens only through `/requirement` with explicit approval of the exact difference | 1, 13 |
 | `source-control` (for example GitHub) | Related code, existing pull requests, the PR for stage 13 | 4, 13 |
 | `database` | Live schema inspection, read-only | 4, 5 |
 | `browser-automation` (Playwright) | Running browser tests, only when execution is required | 8 |
@@ -70,7 +70,7 @@ Each stage follows the lifecycle in the [Workflow Specification](../../docs/work
 
 | # | Stage | Needs | Performed by | Produces | Skip when |
 | --- | --- | --- | --- | --- | --- |
-| 1 | Requirement | | Workflow; `requirements-tracking` if connected | Requirement, constraints, acceptance criteria, classified as Confirmed / Inferred / Unknown | Never |
+| 1 | Requirement | | `requirement-intelligence-agent` ([`/requirement`](../commands/requirement.md)) when a ticket key is supplied or the requirement needs a readiness check; otherwise Workflow; `requirements-tracking` if connected | Requirement and its ID, constraints, acceptance criteria, classified as Confirmed / Inferred / Unknown; Requirement Readiness and Confidence | Never |
 | 2 | Understand Repository | 1 | Repository reading | Structure, technology, build and test commands, conventions | Already understood in this session |
 | 3 | Context Check | 2 | Workflow; the /context command with user agreement | Context state: present, missing, stale or declined | Never (a declined or absent context is recorded) |
 | 4 | Existing System Analysis | 1-3 | Repository reading; `architecture-agent` if structure is unclear | What exists, can be reused, must change, must not change | Never before coding; brief for self-contained work |
@@ -90,6 +90,9 @@ Stages run in order unless a decision point changes the path. Findings from stag
 ### Stage notes
 
 - **1 Requirement.** Mark each statement Confirmed (from the source), Inferred (derived, stated as such) or Unknown (needs an answer). If information is insufficient to proceed, stay in stage 1 and ask.
+  - **Requirement Intelligence and the readiness gate.** With a ticket key (`/feature BR-7368`), or a requirement that has not been checked, stage 1 runs the `requirement-intelligence-agent` and reports Requirement Readiness (`READY`, `NEEDS_CLARIFICATION` or `BLOCKED`) and Confidence (`HIGH`, `MEDIUM`, `LOW`, `UNKNOWN`) separately. Only `READY` lets the workflow continue to stage 2, and then only after the finalized requirement is shown and the user confirms. Otherwise it stops and returns: `Implementation blocked.` and "Requirement is not ready for implementation", the Requirement, the Readiness, the blocking checkpoints and their questions, and the recommended action. The user can continue refining in the same session: the agent asks the next question, takes answers, added context or rewrites, and recalculates ([Interactive Requirement Discovery](../../docs/interactive-requirement-discovery.md)). A refined requirement that the user wants in the ticket goes through `/requirement <key> update`. Confidence never passes the gate. `READY` is not permission to implement: stage 7 still needs PLAN READY and the user's go-ahead. The policy is in the [Readiness Policy](../../docs/requirement-readiness-policy.md).
+  - **Manual requirement.** A requirement typed or pasted, with no ticket, goes through the same gate. Jira is an additional capability, never a mandatory one. If the ticket cannot be retrieved and the user supplies the text, assess the text and say the ticket was not retrieved.
+  - **Ticket updates.** A proposed improvement is written to the ticket only through `/requirement <key> update` after explicit approval of the exact difference. The workflow never updates a ticket itself. After an approved update the requirement is read and assessed again.
 - **4 Existing System Analysis.** Covers architecture, similar functionality, related modules, APIs, database, frontend, tests, patterns, dependencies, configuration and integration points. Done before any coding.
 - **5 Architecture / Design.** The agent covers requirements, constraints, current state, proposed design, affected components, API, database, security, performance, observability and reliability impact, alternatives where useful, and migration and rollout. Do not over-engineer; prefer repository patterns.
 - **6 Implementation Plan.** No code is modified until the plan is established and PLAN READY is confirmed.
@@ -102,6 +105,7 @@ Stages run in order unless a decision point changes the path. Findings from stag
 
 | Command | Serves stage |
 | --- | --- |
+| [`/requirement`](../commands/requirement.md) | 1 |
 | [/context](../commands/context.md) | 3 |
 | [`/architecture`](../commands/architecture.md) | 5 |
 | [`/api`](../commands/api.md) | 6 |
@@ -115,6 +119,7 @@ Stages run in order unless a decision point changes the path. Findings from stag
 
 | Agent | Role | Stage | Used when |
 | --- | --- | --- | --- |
+| [requirement-intelligence-agent](../agents/requirement-intelligence-agent.md) | Supporting | 1 | A ticket key is supplied, or the requirement needs a readiness check |
 | [architecture-agent](../agents/architecture-agent.md) | Supporting | 4, 5 | Structure unclear, or a new component, boundary, integration or non-trivial design choice |
 | [api-development-agent](../agents/api-development-agent.md) | Supporting | 6 | The feature adds or changes an API |
 | [test-planning-agent](../agents/test-planning-agent.md) | Supporting | 8 | The feature changes behavior |
@@ -128,7 +133,7 @@ There is no single primary agent. The workflow is the orchestrator.
 
 Applied through the agents above, or directly when no agent fits the stage. None is required.
 
-- [`architecture`](../skills/architecture/SKILL.md), [`testing`](../skills/testing/SKILL.md), [`code-review`](../skills/code-review/SKILL.md), [`change-intelligence`](../skills/change-intelligence/SKILL.md): through their agents.
+- [`requirement-intelligence`](../skills/requirement-intelligence/SKILL.md), [`architecture`](../skills/architecture/SKILL.md), [`testing`](../skills/testing/SKILL.md), [`code-review`](../skills/code-review/SKILL.md), [`change-intelligence`](../skills/change-intelligence/SKILL.md): through their agents.
 - [`security`](../skills/security/SKILL.md): stage 9, and when an earlier stage surfaces a trust boundary or sensitive data.
 - [`database-sql`](../skills/database-sql/SKILL.md): when the feature changes schema or queries.
 - [`performance`](../skills/performance/SKILL.md), [`reliability`](../skills/reliability/SKILL.md): when the feature has a latency, volume, availability or failure-handling requirement.
@@ -185,6 +190,9 @@ For every failure, report the stage, the failure, the evidence, the likely cause
 | Project Context missing or stale (3) | Repository-evidence work | Context-based conclusions are marked Inferred |
 | Architecture uncertainty (5) | Nothing past stage 5 | Stop and present options |
 | Insufficient requirement (1) | Nothing past stage 1 | All later stages |
+| Requirement `NEEDS_CLARIFICATION` or `BLOCKED` (1) | Nothing past stage 1. Returns `Implementation blocked.` | All later stages |
+| `requirements-tracking` read unavailable (1) | Assessment of requirement text the user supplies | Ticket-based assessment. With no text, `BLOCKED` |
+| `requirements-tracking` write unavailable (1) | Analysis and the proposed update text | The ticket update |
 
 ## Safety
 
@@ -211,6 +219,7 @@ Follows the output contract in [Workflow Common](../../docs/workflow-common.md) 
 - checkpoint status (PLAN READY, IMPLEMENTATION READY, VALIDATION READY, PR READY);
 - limitations (unavailable capabilities, stale or missing context, tests not run);
 - the PR summary if prepared;
+- the Requirement ID, and the Requirement Readiness and Confidence from stage 1, reported separately from the final readiness;
 - final readiness: READY, NEEDS_CHANGES or NEEDS_INFORMATION.
 
 Workflow states use the common labels: ANALYZING (stages 1-5), PLAN_READY (PLAN READY checkpoint), IMPLEMENTING (7-9), VALIDATING (10-14), NEEDS_INFORMATION, NEEDS_HUMAN_APPROVAL (any checkpoint or confirmation above), FAILED and COMPLETED. The checkpoints and readiness vocabulary above are unchanged.

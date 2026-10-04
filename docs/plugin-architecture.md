@@ -40,7 +40,7 @@ Who authenticates, and to which database or endpoint, is runtime configuration s
 | `README.md` | Portable | Package documentation. |
 | `mcp.json` | Portable | Static definitions of existing MCP servers. No credentials, `env`, `headers` or server code. |
 | `.claude-plugin/` | Client-specific (Claude Code) | `marketplace.json` for installation, and `plugin.json` that points Claude Code at `mcp.json`. |
-| `skills/<name>/SKILL.md` | Portable | 13 generic engineering skills, discovered by the client from `skills/`. |
+| `skills/<name>/SKILL.md` | Portable | 14 generic engineering skills, discovered by the client from `skills/`. |
 | `com.github.copilot/` | Client-specific | Copilot namespace. Documents the Copilot resources; holds no copied logic. |
 | `docs/` | Documentation | Specifications and this file. Skills link only to sibling skills and never to `docs/`. |
 
@@ -71,7 +71,7 @@ The core specification is portable around skills only, so none of these are core
 
 - **Agents** (9 per client) link to skills and to `docs/` with relative paths (`../skills/...`, `../../docs/...`) that are valid only in `.claude/agents/` and `.github/agents/`. Placing copies under `com.github.copilot/agents/` would break those links or force a rewritten duplicate of the agent logic, so they are **not** repackaged in this step. They remain intact in place. Packaging them later needs a path strategy that does not fork the definitions.
 - **Commands** (Claude `.claude/commands/`, Copilot `.github/prompts/`) are thin entry points that read the agent definition by repository path.
-- **Claude Code exposure (client-specific, not portable).** `.claude-plugin/plugin.json` points Claude Code at the existing files, with no copies: the commands `/context` and `/review-pr` (as `/ai-engineering-hub:context` and `/ai-engineering-hub:review-pr`) and the one agent `/review-pr` needs, `pr-intelligence-agent` (as the `ai-engineering-hub:pr-intelligence-agent` subagent). Without this, a consuming repository could not reach the agent, because it is a file inside the Hub. The other eight agents are not exposed yet.
+- **Claude Code exposure (client-specific, not portable).** `.claude-plugin/plugin.json` points Claude Code at the existing files, with no copies: the commands `/context`, `/review-pr` and `/requirement` (as `/ai-engineering-hub:context`, `/ai-engineering-hub:review-pr` and `/ai-engineering-hub:requirement`) and the two agents they need, `pr-intelligence-agent` and `requirement-intelligence-agent` (as the `ai-engineering-hub:pr-intelligence-agent` and `ai-engineering-hub:requirement-intelligence-agent` subagents). Without this, a consuming repository could not reach the agent, because it is a file inside the Hub. The other eight agents are not exposed yet.
 - **Workflows** are Hub orchestration documents for the same reason. Unchanged.
 
 ## Project Context

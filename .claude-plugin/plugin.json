@@ -1,7 +1,7 @@
 {
   "name": "ai-engineering-hub",
   "version": "1.0.0",
-  "description": "Reusable AI engineering skills for software development: code review, debugging, testing, architecture, API, database, security, performance, observability, reliability and change intelligence.",
+  "description": "Reusable AI engineering skills for software development: code review, debugging, testing, architecture, API, database, security, performance, observability, reliability, change intelligence and requirement intelligence.",
   "author": {
     "name": "Dilip Kumar Mummadi"
   },
@@ -29,9 +29,11 @@
   },
   "commands": [
     "./.claude/commands/context.md",
-    "./.claude/commands/review-pr.md"
+    "./.claude/commands/review-pr.md",
+    "./.claude/commands/requirement.md"
   ],
   "agents": [
-    "./.claude/agents/pr-intelligence-agent.md"
+    "./.claude/agents/pr-intelligence-agent.md",
+    "./.claude/agents/requirement-intelligence-agent.md"
   ]
 }

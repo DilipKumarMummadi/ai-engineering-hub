@@ -2,14 +2,23 @@
 
 Reusable AI engineering skills, agents, commands and workflows for software engineers, distributable as an [Agent Plugins](https://agent-plugins.org) 1.0.0 plugin (`ai-engineering-hub`). The same repository also works directly, without installing the plugin.
 
+## User Guide
+
+For complete instructions on using the AI Engineering Hub, see:
+
+[docs/user-guide.md](docs/user-guide.md)
+
+It covers installation, choosing a command, agents, skills, workflows, Project Context, MCP tools, safety, differences between Claude Code and GitHub Copilot, troubleshooting, and what is not available.
+
 ## Capabilities
 
 | Capability | Where | Portable plugin content |
 | --- | --- | --- |
-| **Skills** (13): code-review, debugging, testing, playwright, refactoring, architecture, api-development, database-sql, security, performance, observability, reliability, change-intelligence | `skills/` | Yes |
-| **Agents** (9): PR review, PR intelligence, bug investigation, change intelligence, test planning, API development, architecture, database troubleshooting, production incident | `.claude/agents/`, `.github/agents/` | No (client-specific) |
-| **Commands** (17): review, debug, test-plan, architecture, api, database, incident, change-impact, pr-intelligence, review-pr, context; workflow commands feature, bug-fix, api-change, database-change, e2e, pr-prep | `.claude/commands/`, `.github/prompts/` | No |
+| **Skills** (14): code-review, debugging, testing, playwright, refactoring, architecture, api-development, database-sql, security, performance, observability, reliability, change-intelligence, requirement-intelligence | `skills/` | Yes |
+| **Agents** (10): requirement intelligence, PR review, PR intelligence, bug investigation, change intelligence, test planning, API development, architecture, database troubleshooting, production incident | `.claude/agents/`, `.github/agents/` | No (client-specific) |
+| **Commands** (18): requirement, review, debug, test-plan, architecture, api, database, incident, change-impact, pr-intelligence, review-pr, context; workflow commands feature, bug-fix, api-change, database-change, e2e, pr-prep | `.claude/commands/`, `.github/prompts/` | No |
 | **Workflows**: feature-development (14-stage lifecycle with human checkpoints), bug-fix, api-change, database-change, pr-preparation, e2e-test-creation, production-incident, pr-intelligence | `.claude/workflows/`, `.github/workflows/` | No |
+| **Requirement Intelligence**: analyze and refine a Jira issue or a written requirement, assess readiness (READY, NEEDS_CLARIFICATION, BLOCKED) and confidence, and update the ticket only after explicit approval; `/feature <key>` is gated on readiness | `.claude/agents/requirement-intelligence-agent.md`, `.claude/commands/requirement.md`, `.github/prompts/requirement.prompt.md`, `docs/requirement-*.md` | Skill, and (Claude Code) the command and agent |
 | **Project Context**: specification, generator and drift detection, used through `/context generate`, `/context inspect` and `/context drift` | `docs/`, `scripts/project-context/`, `templates/project-context/`, `.claude/commands/context.md`, `.github/prompts/context.prompt.md` | Spec, template and (Claude Code) the `/context` command |
 | **Evals** | `evals/` | No (Hub development) |
 
@@ -52,6 +61,19 @@ From inside the repository you work on (not the Hub):
 
 In Claude Code with the plugin installed the command is `/ai-engineering-hub:context`. In GitHub Copilot use the `context` prompt and set `AI_HUB_HOME` to a Hub checkout. Review the file and commit it to your repository.
 
+## Check a Requirement Before Building It
+
+With a requirements-tracking MCP (for example Atlassian) connected in your client, or with the text pasted:
+
+```
+/requirement BR-7368              # interactive: analysis, checkpoints, readiness, one question at a time
+/requirement BR-7368 refine       # proposed better requirement (nothing written)
+/requirement BR-7368 update       # shows the exact diff; writes only after you approve it
+/feature BR-7368                  # stops before implementation unless the requirement is READY
+```
+
+Answer the question, add context or rewrite the requirement in plain language; the Hub re-analyzes and asks the next question. Readiness is READY, NEEDS_CLARIFICATION or BLOCKED. Confidence is HIGH, MEDIUM, LOW or UNKNOWN. There are no scores. READY never starts implementation. See [Requirement Intelligence](docs/requirement-intelligence-specification.md).
+
 ## Review a GitHub Pull Request
 
 With a GitHub MCP connected and signed in in your client (see [MCP clients](docs/mcp-clients/README.md)), from the repository you work in:
@@ -89,4 +111,4 @@ python3 scripts/validate-hub/validate_hub.py
 
 ## Documentation
 
-[Architecture](docs/architecture.md) · [Plugin Architecture](docs/plugin-architecture.md) · [MCP Integration](docs/mcp-integration-strategy.md) · [MCP Registry](docs/mcp-registry.md) · [MCP Capabilities](docs/mcp-capability-registry.md) · [MCP Setup Guide](docs/mcp-setup-guide.md) · [MCP Clients](docs/mcp-clients/README.md) · [Skills](docs/skills.md) · [Agents](docs/agents.md) · [Workflows](docs/workflows.md) · [Contributing](CONTRIBUTING.md) · [Changelog](CHANGELOG.md)
+[Architecture](docs/architecture.md) · [Plugin Architecture](docs/plugin-architecture.md) · [MCP Integration](docs/mcp-integration-strategy.md) · [MCP Registry](docs/mcp-registry.md) · [MCP Capabilities](docs/mcp-capability-registry.md) · [MCP Setup Guide](docs/mcp-setup-guide.md) · [MCP Clients](docs/mcp-clients/README.md) · [Skills](docs/skills.md) · [Agents](docs/agents.md) · [Workflows](docs/workflows.md) · [Requirement Intelligence](docs/requirement-intelligence-specification.md) · [Interactive Requirement Discovery](docs/interactive-requirement-discovery.md) · [Contributing](CONTRIBUTING.md) · [Changelog](CHANGELOG.md)

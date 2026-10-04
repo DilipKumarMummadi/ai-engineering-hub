@@ -57,6 +57,12 @@ evals/integration/
 | [react-e2e-flow](cases/react-e2e-flow.md) | `/test-plan` | Lowest effective test level, with E2E only where justified |
 | [database-schema-change](cases/database-schema-change.md) | `database-change` workflow | Planning does not authorize execution |
 | [bug-regression](cases/bug-regression.md) | `bug-fix` workflow | Minimal fix proven by a regression test |
+| [jira-requirement-intelligence](cases/jira-requirement-intelligence.md) | `/requirement` | Jira to requirement analysis to readiness, with no implementation |
+| [jira-project-context](cases/jira-project-context.md) | `/requirement` | Project Context as orientation, confirmed against current code |
+| [jira-engineering-memory](cases/jira-engineering-memory.md) | `/requirement` | Specification-only memory reported, provenance kept, repository wins |
+| [jira-change-intelligence](cases/jira-change-intelligence.md) | `/requirement`, `/change-impact` | Expected change impact with Confirmed, Inferred and Unknown findings |
+| [jira-feature-workflow](cases/jira-feature-workflow.md) | `/feature` | Readiness gate, then PLAN READY before any implementation |
+| [requirement-to-pr](cases/requirement-to-pr.md) | `/feature`, `/pr-intelligence` | Requirement to Change to PR traceability, Unknown when not established |
 
 Context-aware behavior has its own set of cases in [`context-aware-agents/`](context-aware-agents/README.md): discovery, relevance, staleness, conflicts, missing context, skill selection and secret protection.
 

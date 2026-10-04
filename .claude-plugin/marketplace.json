@@ -10,7 +10,7 @@
     {
       "name": "ai-engineering-hub",
       "source": "./",
-      "description": "Reusable AI engineering skills: code review, debugging, testing, architecture, API, database, security, performance, observability, reliability and change intelligence.",
+      "description": "Reusable AI engineering skills: code review, debugging, testing, architecture, API, database, security, performance, observability, reliability, change intelligence and requirement intelligence.",
       "category": "engineering",
       "author": {
         "name": "Dilip Kumar Mummadi"

@@ -33,9 +33,25 @@ Statuses are qualitative. There are no scores or rankings.
 | `/api-change` | [`.claude/commands/api-change.md`](../.claude/commands/api-change.md) | [`.github/prompts/api-change.prompt.md`](../.github/prompts/api-change.prompt.md) | None (workflow command) | [api-change](../.claude/workflows/api-change.md) | Design, implement and validate an API change | In Progress |
 | `/database-change` | [`.claude/commands/database-change.md`](../.claude/commands/database-change.md) | [`.github/prompts/database-change.prompt.md`](../.github/prompts/database-change.prompt.md) | None (workflow command) | [database-change](../.claude/workflows/database-change.md) | Plan, implement and validate a database change | In Progress |
 | `/e2e` | [`.claude/commands/e2e.md`](../.claude/commands/e2e.md) | [`.github/prompts/e2e.prompt.md`](../.github/prompts/e2e.prompt.md) | None (workflow command) | [e2e-test-creation](../.claude/workflows/e2e-test-creation.md) | Create a browser E2E test, or recommend a lower level | In Progress |
+| `/requirement` | [`.claude/commands/requirement.md`](../.claude/commands/requirement.md) | [`.github/prompts/requirement.prompt.md`](../.github/prompts/requirement.prompt.md) | requirement-intelligence-agent | None | Analyze, refine and assess the readiness of a requirement or Jira issue; prepare an approved ticket update | In Progress |
 | `/pr-prep` | [`.claude/commands/pr-prep.md`](../.claude/commands/pr-prep.md) | [`.github/prompts/pr-prep.prompt.md`](../.github/prompts/pr-prep.prompt.md) | None (workflow command) | [pr-preparation](../.claude/workflows/pr-preparation.md) | Prepare a finished change for a pull request | In Progress |
 
-All seventeen commands are In Progress because none of their evaluation cases has been run yet. Evaluation cases for the first seven are in [`evals/commands/`](../evals/commands/README.md). The six workflow commands are exercised through the [workflow evaluations](../evals/workflows/README.md). `/review-pr` is evaluated in [`evals/pr-intelligence/mcp/`](../evals/pr-intelligence/mcp/README.md). `/change-impact` and `/pr-intelligence` have no separate routing cases yet. They are exercised through [`evals/change-intelligence/`](../evals/change-intelligence/README.md) and [`evals/pr-intelligence/`](../evals/pr-intelligence/README.md).
+All eighteen commands are In Progress because none of their evaluation cases has been run yet. Evaluation cases for the first seven are in [`evals/commands/`](../evals/commands/README.md). The six workflow commands are exercised through the [workflow evaluations](../evals/workflows/README.md). `/review-pr` is evaluated in [`evals/pr-intelligence/mcp/`](../evals/pr-intelligence/mcp/README.md). `/requirement` is evaluated in [`evals/requirement-intelligence/`](../evals/requirement-intelligence/README.md). `/change-impact` and `/pr-intelligence` have no separate routing cases yet. They are exercised through [`evals/change-intelligence/`](../evals/change-intelligence/README.md) and [`evals/pr-intelligence/`](../evals/pr-intelligence/README.md).
+
+## `/requirement` Usage
+
+Underlying capability: [Requirement Intelligence](requirement-intelligence-specification.md). One agent command. The word after the issue key is read by the agent as plain language. The command has no parser of its own.
+
+| Form | Does | Writes anything |
+| --- | --- | --- |
+| `/requirement BR-7368` | Interactive starting point: retrieve, show, analyze, checkpoint summary, readiness, confidence, the one highest-value question. The user then answers or adds context in plain language | No |
+| `/requirement BR-7368 inspect` | Show the current workspace: enriched requirement, checkpoints, open and answered questions, conflicts | No |
+| `/requirement BR-7368 analyze` | Understanding, evidence classes, criteria verdicts, gaps, dependencies and risks | No |
+| `/requirement BR-7368 refine` | The interactive loop to its end, then the structured requirement and acceptance criteria, unsupported parts marked `Proposed` | No |
+| `/requirement BR-7368 readiness` | The readiness report: dimensions, blocking questions, gate outcome, confidence | No |
+| `/requirement BR-7368 update` | The `refine` output, the exact diff, then a request for explicit approval. Writes the ticket only after the user approves that diff | Only the approved description and acceptance criteria, through the `requirements-tracking` capability |
+
+`/feature BR-7368` runs the same assessment as stage 1 of feature-development and stops before implementation unless the requirement is `READY`. See the [Readiness Policy](requirement-readiness-policy.md).
 
 ## `/context` Operations
 

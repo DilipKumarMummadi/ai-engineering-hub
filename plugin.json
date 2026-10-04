@@ -2,7 +2,7 @@
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "ai-engineering-hub",
   "version": "1.0.0",
-  "description": "Reusable AI engineering skills for software development: code review, debugging, testing, architecture, API, database, security, performance, observability, reliability and change intelligence.",
+  "description": "Reusable AI engineering skills for software development: code review, debugging, testing, architecture, API, database, security, performance, observability, reliability, change intelligence and requirement intelligence.",
   "author": {
     "name": "Dilip Kumar Mummadi"
   },

@@ -1,33 +1,37 @@
 # Agents
 
-This document describes the future agent architecture. No agents exist yet.
+This document describes the agent architecture and lists the agents that exist today.
 
 ## Concept
 
 An agent is a role-oriented AI worker. It combines skills, rules, and tools to take on a broader engineering responsibility than a single skill covers. Agents reuse skills rather than duplicating their instructions.
 
-## Intended Roles
+## Existing Agents
 
-Agents will eventually represent engineering roles such as:
+Ten agents exist. See the [Agent Registry](agent-registry.md) for status and details.
 
-- Software Architect
-- Backend Engineer
-- Frontend Engineer
-- Test Engineer
-- Debugging Engineer
-- DevOps Engineer
-- Security Engineer
-- Database Engineer
+| Agent | Purpose |
+| --- | --- |
+| `requirement-intelligence-agent` | Retrieve, refine and assess the readiness of a requirement before implementation |
+| `pr-review-agent` | Review a pull request or proposed change as a whole |
+| `pr-intelligence-agent` | Assess whether a change is ready for review or merge |
+| `bug-investigation-agent` | Reach an evidence-supported root cause for unexpected behavior |
+| `change-intelligence-agent` | Report the engineering impact of a change |
+| `test-planning-agent` | Produce a test strategy and test plan |
+| `api-development-agent` | Design, implement, review and evolve APIs |
+| `architecture-agent` | Analyze and design software architecture |
+| `database-troubleshooting-agent` | Diagnose database problems and propose safe remediation |
+| `production-incident-agent` | Investigate and stabilize production incidents |
 
-These are planned roles only and have not been created.
+Roles such as Backend Engineer, Frontend Engineer, DevOps Engineer and Test Engineer are not separate agents; their concerns are covered by the agents above and by the skills they use.
 
 ## Location
 
-Agents will live in the platform-native directories: `.claude/agents/` for Claude Code and `.github/agents/` for GitHub Copilot.
+Agents live in the platform-native directories: `.claude/agents/` for Claude Code and `.github/agents/` for GitHub Copilot.
 
 ## Naming
 
-Use lowercase kebab-case, for example `software-architect` or `test-engineer`.
+Use lowercase kebab-case, with an `-agent` suffix, for example `pr-review-agent` or `test-planning-agent`.
 
 ## Agents and External Capabilities
 

@@ -32,6 +32,8 @@ Turn a finished change into a reviewable pull request package: an accurate summa
 
 Missing inputs are identified and asked about, not invented.
 
+**Requirement ID.** If a Requirement ID (for example `BR-7368`) was established earlier in the work, or reliable evidence shows one, the PR summary and description name it and link it. The relationship between the requirement and the change is stated only where evidence shows it. See [Requirement Traceability](../../docs/requirement-traceability.md).
+
 **External sources (optional).** Capabilities per the [MCP Capability Registry](../../docs/mcp-capability-registry.md); fallback and limitation wording are in [Workflow Common](../../docs/workflow-common.md).
 
 | Capability | Used for | Stage |

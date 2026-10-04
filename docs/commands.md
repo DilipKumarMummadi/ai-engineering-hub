@@ -33,6 +33,7 @@ One command is different. [`/context`](#context-generate-inspect-drift) is a **t
 | `/database` | database-troubleshooting-agent | Investigate or design database and SQL behavior |
 | `/incident` | production-incident-agent | Investigate an active or recent production incident |
 | `/review-pr` | pr-intelligence-agent | Review a GitHub pull request by URL or number, using a connected source-control MCP |
+| `/requirement` | requirement-intelligence-agent | Analyze, refine and assess the readiness of a requirement or Jira issue (`analyze`, `refine`, `readiness`, `update`) |
 | `/feature`, `/bug-fix`, `/api-change`, `/database-change`, `/e2e`, `/pr-prep` | a workflow (none) | See [Workflow Commands](#workflow-commands) |
 
 ## Workflow Commands
@@ -170,6 +171,7 @@ A command is a request to start work. It is not authorization to change anything
 - `/database` does not authorize `DELETE`, `UPDATE`, `DROP`, `TRUNCATE`, `ALTER` or any statement that changes data or schema. The database agent's safety rules still apply.
 - `/incident` does not authorize production changes such as rollback, restart, scaling, failover, feature flag or configuration changes, killing sessions or data changes. The incident agent proposes reversible mitigation and asks for authorization.
 - `/review-pr` does not authorize approvals, merges, comments or changes on the pull request, and never involves credentials.
+- `/requirement` does not authorize implementation, edits, commits or any other change. Its `update` word prepares a ticket update and does not authorize writing it: the ticket is written only after the user explicitly approves the exact difference shown. See the [Requirement Intelligence Specification](requirement-intelligence-specification.md).
 - `/review` does not authorize edits, merges, approvals, pushes or comments on a pull request.
 - `/context` modifies only `PROJECT-CONTEXT.md` of the target repository, only through the generator, and only for `generate`. It does not authorize editing source or configuration, commits, pushes or deployments, and it never reproduces a secret.
 - `/feature`, `/bug-fix`, `/api-change`, `/database-change`, `/e2e` and `/pr-prep` do not authorize applying migrations, deployments, merges, pushes, approvals or production changes. Planning is never authorization, and the workflow's checkpoints still apply.

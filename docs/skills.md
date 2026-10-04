@@ -1,10 +1,31 @@
 # Skills
 
-This document describes the future skill architecture. No skills exist yet.
+This document describes the skill architecture and lists the skills that exist today.
+
+## Existing Skills
+
+Fourteen skills exist. Each lives in its own directory with a `SKILL.md`:
+
+| Skill | Purpose |
+| --- | --- |
+| `api-development` | Design, implement, review and improve APIs |
+| `architecture` | Analyze, design and evolve software architecture |
+| `change-intelligence` | Identify the engineering impact of a change |
+| `code-review` | Review software changes and produce severity-ranked findings |
+| `database-sql` | Relational database, SQL, schema and migration work |
+| `debugging` | Evidence-driven investigation of failures |
+| `observability` | Logs, metrics, traces, alerts and telemetry analysis |
+| `performance` | Measured performance investigation and improvement |
+| `playwright` | Plan, generate, review and debug Playwright/E2E tests |
+| `refactoring` | Improve code structure while preserving behavior |
+| `reliability` | Failure modes, resilience and recovery |
+| `requirement-intelligence` | Analyze and interactively refine a requirement and assess its readiness |
+| `security` | Defensive security review and hardening |
+| `testing` | Test planning, generation and review |
 
 ## Structure
 
-Each skill will live in its own lowercase kebab-case directory and follow a standardized `SKILL.md` structure, for example:
+Each skill lives in its own lowercase kebab-case directory and follows the standardized `SKILL.md` structure defined in [skill-specification.md](skill-specification.md), for example:
 
 ```
 <skills-dir>/
@@ -12,7 +33,7 @@ Each skill will live in its own lowercase kebab-case directory and follow a stan
     └── SKILL.md
 ```
 
-The exact `SKILL.md` format (metadata, instructions, supporting files) will be defined when the first skill is introduced. Skills will be placed in the directory native to each platform (`.claude/skills/`, `.github/skills/`) or in the tool-neutral `.agents/skills/`.
+The same skills are present in the portable plugin directory `skills/`, in the platform-native directories `.claude/skills/` and `.github/skills/`, and in the tool-neutral `.agents/skills/`.
 
 ## Design Qualities
 

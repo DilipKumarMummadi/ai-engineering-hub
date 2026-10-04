@@ -17,6 +17,8 @@ Follow [Project Context Consumption](project-context-consumption.md). The Contex
 - Identify a ticket only from reliable evidence (user input, branch name, commit messages, linked item). Never guess a ticket.
 - Classify each requirement statement as **Confirmed** (from a source), **Inferred** (derived, stated as such) or **Unknown** (needs an answer).
 - If information is insufficient, state NEEDS_INFORMATION and ask.
+- **Requirement ID.** When a ticket key (for example `BR-7368`) is supplied or reliably shown, it becomes the Requirement ID and is carried through every stage, the PR description and PR intelligence. Use the key as the canonical external identifier. Do not copy the whole ticket or create a requirement store. See [Requirement Traceability](requirement-traceability.md).
+- **Requirement readiness.** A workflow that implements a requirement runs it through the `requirement-intelligence-agent` first when a ticket key is supplied or the requirement has not been checked. Requirement Readiness (`READY`, `NEEDS_CLARIFICATION`, `BLOCKED`) and Confidence (`HIGH`, `MEDIUM`, `LOW`, `UNKNOWN`) are reported separately from a workflow's final readiness, and only `READY` permits implementation, when the user asks for it. See the [Readiness Policy](requirement-readiness-policy.md). A ticket is updated only after explicit approval of the exact difference.
 
 ## 3. Evidence Classification
 

@@ -35,6 +35,8 @@ Resolve a defect by moving from report to evidence to hypotheses to a validated 
 
 Missing evidence is listed, not invented.
 
+**Requirement readiness.** When a ticket key is supplied, the `requirement-intelligence-agent` (`/requirement`) can establish the report. The bug-fix path asks only what a defect needs: symptom, expected behavior, reproduction, environment and impact. It does not demand feature-style acceptance criteria, and it does not hold up a live production problem for a ticket. The key is carried as the Requirement ID into the fix, the regression test and the PR.
+
 **External sources (optional).** Detection, fallback and the exact fallback sentences are in [Workflow Common Guidance](../../docs/workflow-common.md#4-mcp-capability-detection-and-fallback).
 
 | Capability | Used for | Stage |

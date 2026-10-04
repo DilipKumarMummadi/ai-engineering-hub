@@ -13,7 +13,7 @@ REPO = Path(__file__).resolve().parents[2]
 
 def make_copy() -> Path:
     tmp = Path(tempfile.mkdtemp())
-    for rel in ("plugin.json", "README.md", "mcp.json", ".claude-plugin", "skills", ".claude/skills", ".claude/commands/context.md", ".claude/commands/review-pr.md", ".claude/agents/pr-intelligence-agent.md", "docs/plugin-architecture.md", "com.github.copilot"):
+    for rel in ("plugin.json", "README.md", "mcp.json", ".claude-plugin", "skills", ".claude/skills", ".claude/commands/context.md", ".claude/commands/review-pr.md", ".claude/commands/requirement.md", ".claude/agents/pr-intelligence-agent.md", ".claude/agents/requirement-intelligence-agent.md", "docs/plugin-architecture.md", "com.github.copilot"):
         s, d = REPO / rel, tmp / rel
         d.parent.mkdir(parents=True, exist_ok=True)
         shutil.copytree(s, d) if s.is_dir() else shutil.copy2(s, d)

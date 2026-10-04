@@ -64,7 +64,7 @@ Reusable mechanics live in [Workflow Common Guidance](workflow-common.md): conte
 
 ## Feature Development Lifecycle
 
-`feature-development` is the most comprehensive workflow. It runs a 14-stage lifecycle: 1 Requirement, 2 Understand Repository, 3 Project Context, 4 Existing System Analysis, 5 Architecture/Design, 6 Implementation Plan, 7 Implementation, 8 Testing, 9 Security Review, 10 Change Intelligence, 11 Code Review, 12 PR Preparation, 13 PR Intelligence, 14 Final Validation. Irrelevant stages are skipped with a recorded reason.
+`feature-development` is the most comprehensive workflow. Stage 1 includes the Requirement Intelligence readiness gate when a ticket key is supplied or the requirement needs checking: only a `READY` requirement continues ([Readiness Policy](requirement-readiness-policy.md)). It runs a 14-stage lifecycle: 1 Requirement, 2 Understand Repository, 3 Project Context, 4 Existing System Analysis, 5 Architecture/Design, 6 Implementation Plan, 7 Implementation, 8 Testing, 9 Security Review, 10 Change Intelligence, 11 Code Review, 12 PR Preparation, 13 PR Intelligence, 14 Final Validation. Irrelevant stages are skipped with a recorded reason.
 
 - **Requirements** are classified Confirmed, Inferred or Unknown. Unknown requirements are asked about, not guessed.
 - **Human checkpoints:** PLAN READY, IMPLEMENTATION READY, VALIDATION READY and PR READY. Significant architectural, destructive database, security-sensitive, infrastructure, production-impacting and broad or refactoring changes also need explicit user confirmation. Planning is never authorization, and migrations and deployments are never run.

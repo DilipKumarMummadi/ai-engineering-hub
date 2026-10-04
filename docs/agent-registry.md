@@ -27,11 +27,12 @@ Statuses are qualitative. There are no scores or rankings.
 | [database-troubleshooting-agent](../.claude/agents/database-troubleshooting-agent.md) | Database | Investigate database-related problems and produce an evidence-based diagnosis and safe remediation. | In Progress |
 | [production-incident-agent](../.claude/agents/production-incident-agent.md) | Production Operations | Investigate and stabilize production incidents, prioritizing impact and reversible mitigation. | In Progress |
 | [change-intelligence-agent](../.claude/agents/change-intelligence-agent.md) | Code Quality | Analyze a proposed or existing change and report its evidence-based engineering impact, risks and validation needs. Analysis only. | In Progress |
+| [requirement-intelligence-agent](../.claude/agents/requirement-intelligence-agent.md) | Requirements | Retrieve, analyze and interactively refine a requirement (dynamic checkpoints, one question at a time, answers, conflicts) and decide whether it is ready to implement, with qualitative confidence. Prepares a ticket update that is written only after explicit approval. Never starts implementation. | In Progress |
 | [pr-intelligence-agent](../.claude/agents/pr-intelligence-agent.md) | Code Quality | Assess whether a complete proposed change is ready for review or merge by orchestrating change intelligence, code review and only the relevant supporting analyses. Recommends only. | In Progress |
 
 Each agent also has a Project Context section, following [Project Context Consumption](project-context-consumption.md). It lists the few topics relevant to the agent and adds no project-specific knowledge.
 
-All nine agents are In Progress because none of their evaluation cases has been run yet. See the [Agent Evaluation Matrix](agent-evaluation-matrix.md) for what the cases cover (it covers the first seven). The cases for `change-intelligence-agent` are in [`evals/change-intelligence/`](../evals/change-intelligence/README.md), and those for `pr-intelligence-agent` are in [`evals/pr-intelligence/`](../evals/pr-intelligence/README.md).
+All ten agents are In Progress because none of their evaluation cases has been run yet. See the [Agent Evaluation Matrix](agent-evaluation-matrix.md) for what the cases cover (it covers the first seven). The cases for `change-intelligence-agent` are in [`evals/change-intelligence/`](../evals/change-intelligence/README.md), those for `pr-intelligence-agent` are in [`evals/pr-intelligence/`](../evals/pr-intelligence/README.md), and those for `requirement-intelligence-agent` are in [`evals/requirement-intelligence/`](../evals/requirement-intelligence/README.md).
 
 Three capabilities look alike and are not the same:
 
@@ -42,6 +43,8 @@ Three capabilities look alike and are not the same:
 | PR intelligence (`pr-intelligence-agent`) | Orchestration and readiness: which analyses the PR needs, their combined findings, and whether it is ready |
 
 PR intelligence uses the other two and does not replace them.
+
+Requirement intelligence works before implementation and PR intelligence after it. Requirement Readiness (`READY`, `NEEDS_CLARIFICATION`, `BLOCKED`) is a different vocabulary from PR readiness (Ready, Needs Changes, Needs Information), and neither replaces the other.
 
 ## Skill Mapping
 
@@ -57,6 +60,7 @@ PR intelligence uses the other two and does not replace them.
 | database-troubleshooting-agent | database-sql | debugging, performance, reliability, security, architecture |
 | production-incident-agent | debugging, observability, reliability | performance, database-sql, security, architecture, api-development |
 | change-intelligence-agent | change-intelligence | architecture, code-review, api-development, database-sql, testing, security, performance, observability, reliability |
+| requirement-intelligence-agent | requirement-intelligence | change-intelligence, architecture, api-development, database-sql, security, reliability, testing |
 | pr-intelligence-agent | code-review (for a meaningful PR) | change-intelligence, testing, security, api-development, database-sql, performance, reliability, observability, architecture, playwright |
 
 Notes:
@@ -94,6 +98,8 @@ These are possible **handoffs**, not required execution chains. An agent recomme
 | change-intelligence-agent | pr-review-agent | The change needs a correctness and quality review |
 | | test-planning-agent | Validation needs a detailed plan |
 | | architecture-agent | The change crosses boundaries or needs a design decision |
+| requirement-intelligence-agent | architecture-agent, api-development-agent, test-planning-agent, change-intelligence-agent, database-troubleshooting-agent | The requirement is ready and needs a design, contract, test plan, impact view or data analysis |
+| | feature-development workflow (`/feature`) | The requirement is `READY` and the user asks for it to be built |
 | pr-intelligence-agent | bug-investigation-agent | A finding needs investigation of behavior |
 | | test-planning-agent | Tests need a detailed plan |
 | | architecture-agent, api-development-agent, database-troubleshooting-agent | The PR needs a design, contract or database decision |
@@ -114,6 +120,7 @@ Handoffs to security and performance analysis from `bug-investigation-agent` poi
 | A database problem | database-troubleshooting-agent |
 | An active production incident | production-incident-agent |
 | What a change affects and what to validate | change-intelligence-agent |
+| Whether a requirement or ticket is ready to implement | requirement-intelligence-agent |
 | Whether a complete PR is ready for review or merge | pr-intelligence-agent |
 
 Some requests need several agents in sequence. For example, a production incident may start with the production-incident-agent to stabilize, continue with the bug-investigation-agent for the root cause, and end with the architecture-agent for a systemic fix. Each agent hands off with the context the next one needs.

@@ -73,6 +73,7 @@ Skills provide focused engineering capabilities. A skill explains how to do one 
 | --- | --- |
 | `code-review` | Review changes and produce evidence-based findings |
 | `change-intelligence` | Analyze the impact of a change from repository evidence |
+| `requirement-intelligence` | Understand a requirement, classify what is confirmed, inferred, unknown, missing or ambiguous, and assess readiness and confidence |
 | `debugging` | Investigate failures from symptom to confirmed cause |
 | `testing` | Plan, write and assess tests |
 | `playwright` | Browser and end-to-end tests |
@@ -101,6 +102,7 @@ An agent orchestrates skills around one specific engineering responsibility. It 
 | `database-troubleshooting-agent` | Diagnose database problems and plan safe remediation | `database-sql` |
 | `production-incident-agent` | Stabilize and investigate production incidents | `debugging`, `observability`, `reliability` |
 | `change-intelligence-agent` | Report the impact, risks and validation needs of a change | `change-intelligence` |
+| `requirement-intelligence-agent` | Decide whether a requirement is ready to implement; prepare an approved ticket update | `requirement-intelligence` |
 | `pr-intelligence-agent` | Decide whether a complete PR is ready, by orchestrating the relevant analyses | `code-review`, `change-intelligence` |
 
 Each agent's full skill set, including the skills selected by context, is in the [Agent Registry](agent-registry.md). A skill outside an agent's set is reached by a handoff or a direct request, and not assumed.
@@ -119,6 +121,7 @@ Commands are lightweight, user-facing entry points. A command passes the user's 
 | `/database` | `database-troubleshooting-agent` |
 | `/incident` | `production-incident-agent` |
 | `/change-impact` | `change-intelligence-agent` |
+| `/requirement` | `requirement-intelligence-agent` |
 | `/pr-intelligence` | `pr-intelligence-agent` |
 
 A command never selects skills or runs a process of its own. Six workflow commands route to exactly one workflow file instead of an agent and stay thin: `/feature`, `/bug-fix`, `/api-change`, `/database-change`, `/e2e` and `/pr-prep`. `/incident` remains the entry for the production-incident workflow.
@@ -179,6 +182,8 @@ PR Intelligence
 ```
 
 PR Intelligence orchestrates. It adds no engineering rules, and it never approves, merges or changes anything. Change Intelligence is a skill with its own agent and command, and is also used inside existing workflow stages where a change spans several areas. Both are analysis only. See the [Change Intelligence Specification](change-intelligence-specification.md) and the [PR Intelligence Specification](pr-intelligence-specification.md).
+
+**Requirement Intelligence** works before implementation. It is a skill (`requirement-intelligence`), an agent (`requirement-intelligence-agent`) and a command (`/requirement`), not a new layer. It obtains a requirement through the `requirements-tracking` capability, compares it with repository evidence, Project Context and (where entries exist) Engineering Memory, and reports Requirement Readiness (`READY`, `NEEDS_CLARIFICATION`, `BLOCKED`) and Confidence (`HIGH`, `MEDIUM`, `LOW`, `UNKNOWN`) separately. Readiness is the implementation gate used by the workflows. A ticket is changed only after explicit approval of the exact difference. Jira stays the source of truth, and the Hub builds no Jira server and stores no credentials. See the [Requirement Intelligence Specification](requirement-intelligence-specification.md).
 
 ## Project Context
 

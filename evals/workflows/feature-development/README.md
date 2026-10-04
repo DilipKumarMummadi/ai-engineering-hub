@@ -40,6 +40,8 @@ Every case checks: stage ordering and recorded skips, agent and skill selection,
 - [tests-fail.md](cases/tests-fail.md): failing tests; checks failure reporting and that READY is never given.
 - [architecture-uncertainty.md](cases/architecture-uncertainty.md): material design choice open; checks architecture use and confirmation.
 - [insufficient-requirement-information.md](cases/insufficient-requirement-information.md): vague request; checks stopping with NEEDS_INFORMATION.
+- [jira-id-readiness-gate.md](cases/jira-id-readiness-gate.md): `/feature` with a ticket key; checks the readiness gate, the blocked output and that READY does not start implementation.
+- [manual-requirement-readiness.md](cases/manual-requirement-readiness.md): typed requirement with no ticket; checks the same gate applies and Jira is not required.
 
 ## Common Failure Modes
 
