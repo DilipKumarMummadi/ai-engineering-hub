@@ -411,6 +411,10 @@ Rules:
 - Facts that are cheap to verify and important to the task (a command, a version, a path) are verified before being relied on.
 - Updating the context is a separate, explicit action. See [Usage Rules](#usage-rules).
 
+## Ownership and Commands
+
+A project context belongs to the repository it describes. The Hub ships the specification, the template, the generator and the drift detector, and does not store any repository's context. A developer creates and maintains the context in their own repository with `/context generate`, reads it with `/context inspect`, and checks it with `/context drift`. All three target the repository of the current working directory. See [Commands](commands.md#context-generate-inspect-drift). The context stays safe to commit: it never contains secrets.
+
 ## Usage Rules
 
 Agents, skills and workflows that use project context should:

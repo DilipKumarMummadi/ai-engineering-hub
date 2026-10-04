@@ -104,12 +104,38 @@ def check_agents(skills):
     return agents
 
 
+TOOL_COMMANDS = {"context"}  # run a Hub tool instead of routing to an agent
+TOOL_OPERATIONS = ("generate", "inspect", "drift")
+
+
+def check_tool_command(plat, p, t):
+    where = f"{plat['commands']}/{p.name}"
+    if re.search(r"`[a-z-]+-agent`", t):
+        fail(where, "a tool command must not route to an agent")
+    if "scripts/project-context/project-context" not in t:
+        fail(where, "must invoke the existing Project Context Generator launcher")
+    for op in TOOL_OPERATIONS:
+        if f"| `{op}` |" not in t:
+            fail(where, f"missing operation {op}")
+    for needle in ("git rev-parse --show-toplevel", "AI Engineering Hub itself", "does not authorize commits", "--repo <target root>", "Never reproduce a secret"):
+        if needle not in t:
+            fail(where, f"missing required rule: {needle}")
+    if re.search(r"(?i)\bgenerator\b.*\b(reimplement|rewrite the generator)", t):
+        fail(where, "must not reimplement the generator")
+
+
 def check_commands(agents):
     routes = {}
+    tool_headings = {}
     for key, plat in PLATFORMS.items():
         for p in sorted((ROOT / plat["commands"]).glob("*" + plat["cmd_suffix"])):
             checked["commands"] += 1
             t = p.read_text(encoding="utf-8")
+            name = p.name[: -len(plat["cmd_suffix"])]
+            if name in TOOL_COMMANDS:
+                check_tool_command(plat, p, t)
+                tool_headings.setdefault(name, {})[key] = re.findall(r"(?m)^#{1,3} .*$", t)
+                continue
             named = sorted(set(re.findall(r"`([a-z-]+-agent)`", t)))
             if len(named) != 1 or named[0] not in agents:
                 fail(f"{plat['commands']}/{p.name}", f"must route to exactly one existing agent, found {named}")
@@ -119,6 +145,9 @@ def check_commands(agents):
             if re.search(r"(?i)skills/|\bselect(s)? skills?\b.*:", t):
                 fail(f"{plat['commands']}/{p.name}", "commands must not select skills")
             routes.setdefault(key, {})[p.name.replace(plat["cmd_suffix"], "")] = named[0]
+    for name, by_plat in tool_headings.items():
+        if len(by_plat) != 2 or by_plat["claude"] != by_plat["github"]:
+            fail(f"commands/{name}", "tool command missing on a platform or structure differs between platforms")
     if routes.get("claude") != routes.get("github"):
         fail("commands", "platform routing differs")
     if len(set(routes.get("claude", {}).values())) != len(routes.get("claude", {})):

@@ -26,5 +26,8 @@
       "description": "Optional. Token for the read-only GitHub MCP server, used only by Claude Code. Leave empty to skip GitHub. Stored in your system credential store, never in the repository.",
       "sensitive": true
     }
-  }
+  },
+  "commands": [
+    "./.claude/commands/context.md"
+  ]
 }

@@ -190,7 +190,7 @@ The context does not authorize anything. A statement such as "safe to run migrat
 
 ## What This Does Not Do
 
-- It does not create or update the context. That is the generator.
+- It does not create or update the context. That is the generator, which the developer runs with `/context generate` in their own repository. The context belongs to that repository, not to the Hub.
 - It does not detect drift. That is the drift detector, which an agent may call if present.
 - It does not add a context server, injection service or new file format.
 - It does not make context a prerequisite. Every agent and workflow works without one.

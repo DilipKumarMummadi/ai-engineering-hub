@@ -10,7 +10,7 @@ Reusable AI engineering skills, agents, commands and workflows for software engi
 | **Agents** (9): PR review, PR intelligence, bug investigation, change intelligence, test planning, API development, architecture, database troubleshooting, production incident | `.claude/agents/`, `.github/agents/` | No (client-specific) |
 | **Commands**: review, debug, test-plan, architecture, api, database, incident, change-impact, pr-intelligence | `.claude/commands/`, `.github/prompts/` | No |
 | **Workflows**: feature-development, bug-fix, api-change, database-change, pr-preparation, e2e-test-creation, production-incident, pr-intelligence | `.claude/workflows/`, `.github/workflows/` | No |
-| **Project Context**: specification, generator and drift detection | `docs/`, `scripts/project-context/`, `templates/project-context/` | Spec and template only |
+| **Project Context**: specification, generator and drift detection, used through `/context generate`, `/context inspect` and `/context drift` | `docs/`, `scripts/project-context/`, `templates/project-context/`, `.claude/commands/context.md`, `.github/prompts/context.prompt.md` | Spec, template and (Claude Code) the `/context` command |
 | **Evals** | `evals/` | No (Hub development) |
 
 ## Plugin Structure
@@ -34,6 +34,19 @@ See [Plugin Architecture](docs/plugin-architecture.md) and the general [Architec
 
 - **Agent Plugins clients:** install the plugin from this repository (`https://github.com/DilipKumarMummadi/ai-engineering-hub`); the client discovers `skills/*/SKILL.md`.
 - **Claude Code / GitHub Copilot, directly:** clone the repository. `.claude/` and `.github/` are used natively, including agents, commands and workflows.
+
+## Generate Project Context for Your Repository
+
+From inside the repository you work on (not the Hub):
+
+```
+/context generate --dry-run     # preview; writes nothing
+/context generate               # create or update PROJECT-CONTEXT.md
+/context inspect                # summarize it
+/context drift                  # check whether it may be stale
+```
+
+In Claude Code with the plugin installed the command is `/ai-engineering-hub:context`. In GitHub Copilot use the `context` prompt and set `AI_HUB_HOME` to a Hub checkout. Review the file and commit it to your repository.
 
 ## Project Context
 

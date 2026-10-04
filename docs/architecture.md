@@ -57,7 +57,7 @@ Skills are selected by the agent and applied to the repository. Project Context 
 | --- | --- | --- | --- | --- |
 | Skill | A focused engineering capability | 13 | [Skill Specification](skill-specification.md) | [Skills](skills.md) |
 | Agent | Orchestrates skills around one engineering responsibility | 9 | [Agent Specification](agent-specification.md) | [Agent Registry](agent-registry.md) |
-| Command | A lightweight user-facing entry point to one agent | 9 | [Commands](commands.md) | [Command Registry](command-registry.md) |
+| Command | A lightweight user-facing entry point to one agent, or (`/context`) to a Hub tool | 10 | [Commands](commands.md) | [Command Registry](command-registry.md) |
 | Workflow | A repeatable multi-stage engineering process | 8 | [Workflow Specification](workflow-specification.md) | [Workflow Registry](workflow-registry.md) |
 
 Each layer is defined once and reused by the layers above it. Lower layers do not know about higher ones.

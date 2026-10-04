@@ -27,7 +27,19 @@ Statuses are qualitative. There are no scores or rankings.
 | `/change-impact` | [`.claude/commands/change-impact.md`](../.claude/commands/change-impact.md) | [`.github/prompts/change-impact.prompt.md`](../.github/prompts/change-impact.prompt.md) | change-intelligence-agent | Analyze the engineering impact of a change | In Progress |
 | `/pr-intelligence` | [`.claude/commands/pr-intelligence.md`](../.claude/commands/pr-intelligence.md) | [`.github/prompts/pr-intelligence.prompt.md`](../.github/prompts/pr-intelligence.prompt.md) | pr-intelligence-agent | Assess whether a PR or change is ready | In Progress |
 
-All nine commands are In Progress because none of their evaluation cases has been run yet. Evaluation cases for the first seven are in [`evals/commands/`](../evals/commands/README.md). `/change-impact` and `/pr-intelligence` have no separate routing cases yet. They are exercised through [`evals/change-intelligence/`](../evals/change-intelligence/README.md) and [`evals/pr-intelligence/`](../evals/pr-intelligence/README.md).
+| `/context` | [`.claude/commands/context.md`](../.claude/commands/context.md) | [`.github/prompts/context.prompt.md`](../.github/prompts/context.prompt.md) | None (tool command; runs the Project Context Generator) | Generate, inspect or check the current repository's Project Context | In Progress |
+
+All ten commands are In Progress because none of their evaluation cases has been run yet. Evaluation cases for the first seven are in [`evals/commands/`](../evals/commands/README.md). `/change-impact` and `/pr-intelligence` have no separate routing cases yet. They are exercised through [`evals/change-intelligence/`](../evals/change-intelligence/README.md) and [`evals/pr-intelligence/`](../evals/pr-intelligence/README.md).
+
+## `/context` Operations
+
+Underlying capability for all three: the [Project Context Generator and Drift Detector](../scripts/project-context/README.md), specified in the [Generator](project-context-generator-specification.md) and [Drift](project-context-drift-specification.md) specifications. Evaluation: [`evals/project-context-command/`](../evals/project-context-command/README.md).
+
+| Operation | Purpose | Inputs | Output | Safety behavior |
+| --- | --- | --- | --- | --- |
+| `/context generate` | Create or update the current repository's `PROJECT-CONTEXT.md` | Current working directory; optional `--dry-run` | The written (or proposed) context, counts of Confirmed, Inferred and Unknown entries, key unknowns, secret-detection status, conflicts | Writes only `PROJECT-CONTEXT.md` in the target, through the generator. Preserves developer-provided and manual content. Never writes a secret. Stops on an unrecognizable directory or the Hub itself. No commit |
+| `/context inspect` | Summarize the existing context | Current working directory | Summary by area, with freshness and unknowns; says when the context is absent | Read-only. Never regenerates. Never reproduces a secret |
+| `/context drift` | Report whether the context may be stale | Current working directory | Drift status, findings by materiality, recommendation | Read-only. Never modifies the context, and recommends `generate` without running it |
 
 ## Adding or Changing a Command
 

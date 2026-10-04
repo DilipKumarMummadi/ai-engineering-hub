@@ -15,6 +15,8 @@ Command → Agent → Skills → Validation
 
 The engineering instructions live in the agents and skills. A command only names its agent and states how to pass the request.
 
+One command is different. [`/context`](#context-generate-inspect-drift) is a **tool command**: it runs the Hub's Project Context Generator on the repository you are working in instead of routing to an agent.
+
 ## Available Commands
 
 | Command | Agent | Purpose |
@@ -26,6 +28,34 @@ The engineering instructions live in the agents and skills. A command only names
 | `/api` | api-development-agent | Design, implement, review or evolve an API |
 | `/database` | database-troubleshooting-agent | Investigate or design database and SQL behavior |
 | `/incident` | production-incident-agent | Investigate an active or recent production incident |
+
+## `/context`: Generate, Inspect, Drift
+
+Project Context belongs to the **consuming repository**. The Hub provides the capability; it never stores another repository's context.
+
+```
+AI Engineering Hub  ── installed into / available to ──►  your-repository
+                                                              │
+                                                              ▼
+                                                        /context generate
+                                                              │
+                                                              ▼
+                                                   your-repository/PROJECT-CONTEXT.md
+```
+
+| Request | Does | Writes |
+| --- | --- | --- |
+| `/context generate` | Creates or minimally updates the current repository's `PROJECT-CONTEXT.md` with the existing generator. `--dry-run` shows the result and writes nothing. | `PROJECT-CONTEXT.md` only |
+| `/context inspect` | Reads the existing context and summarizes it. Never regenerates. | Nothing |
+| `/context drift` | Runs the existing read-only drift check and reports whether the context may be stale. | Nothing |
+
+The command identifies the target with `git rev-parse --show-toplevel` from the current working directory, so a subdirectory of a repository works. It stops and asks when the directory is not a project, and when the target is the Hub itself. It locates the generator through the plugin root, or `AI_HUB_HOME`, or by asking, and never copies it into your repository. Every operation passes `--repo <target root>`.
+
+Claude Code: `/context ...` in the Hub repository, or `/ai-engineering-hub:context ...` when the plugin is installed. GitHub Copilot: the `context` prompt in `.github/prompts/`; it has no plugin root, so set `AI_HUB_HOME` to a Hub checkout. Both follow the same rules.
+
+**CLI status.** There is no global `ai-hub` executable, and none is faked. The generator's own entry point is `scripts/project-context/project-context` (`generate`, `update`, `drift`, `--dry-run`). A future `ai-hub context generate | inspect | drift` would wrap the same operations and is not implemented.
+
+**Developer instructions.** From inside your repository: run `/context generate --dry-run`, read the summary, run `/context generate`, review `PROJECT-CONTEXT.md` and commit it. Later, run `/context drift`, and `/context generate` when it reports material drift.
 
 ## Skills Used Indirectly
 
@@ -106,6 +136,7 @@ A command is a request to start work. It is not authorization to change anything
 - `/database` does not authorize `DELETE`, `UPDATE`, `DROP`, `TRUNCATE`, `ALTER` or any statement that changes data or schema. The database agent's safety rules still apply.
 - `/incident` does not authorize production changes such as rollback, restart, scaling, failover, feature flag or configuration changes, killing sessions or data changes. The incident agent proposes reversible mitigation and asks for authorization.
 - `/review` does not authorize edits, merges, approvals, pushes or comments on a pull request.
+- `/context` modifies only `PROJECT-CONTEXT.md` of the target repository, only through the generator, and only for `generate`. It does not authorize editing source or configuration, commits, pushes or deployments, and it never reproduces a secret.
 - `/debug`, `/architecture`, `/test-plan` and `/api` do not authorize changes to code, data, configuration or infrastructure by themselves.
 
 Authorization is given explicitly by the user, for a specific action. A command that names a risky action ("/database delete the duplicates") still goes through the agent's safety rules.
@@ -121,7 +152,7 @@ The two formats are not identical, but the behavior and intent are the same: nam
 
 ## Adding or Changing a Command
 
-- A command must route to an existing agent and contain no engineering logic.
+- A command must route to an existing agent and contain no engineering logic. The only exception is a tool command such as `/context`, which runs an existing Hub tool and is listed in the validator's tool-command set.
 - Create both the Claude command and the Copilot prompt, with equivalent behavior.
 - Add evaluation cases under `evals/commands/<name>/`. See [evals/commands](../evals/commands/README.md).
 - Update the [Command Registry](command-registry.md).

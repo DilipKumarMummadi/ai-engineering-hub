@@ -13,7 +13,7 @@ REPO = Path(__file__).resolve().parents[2]
 
 def make_copy() -> Path:
     tmp = Path(tempfile.mkdtemp())
-    for rel in ("plugin.json", "README.md", "mcp.json", ".claude-plugin", "skills", ".claude/skills", "docs/plugin-architecture.md", "com.github.copilot"):
+    for rel in ("plugin.json", "README.md", "mcp.json", ".claude-plugin", "skills", ".claude/skills", ".claude/commands/context.md", "docs/plugin-architecture.md", "com.github.copilot"):
         s, d = REPO / rel, tmp / rel
         d.parent.mkdir(parents=True, exist_ok=True)
         shutil.copytree(s, d) if s.is_dir() else shutil.copy2(s, d)
@@ -140,6 +140,12 @@ class PluginTests(unittest.TestCase):
     def test_claude_override_must_match_server(self):
         self.claude(lambda d: d["mcpServers"][1]["github"].update(url="https://evil.example.com/mcp"))
         self.assertTrue(self.has("must match a server in mcp.json"))
+
+    def test_claude_command_path_must_exist_and_stay_inside(self):
+        self.claude(lambda d: d.update(commands=["./.claude/commands/missing.md"]))
+        self.assertTrue(self.has("must be an existing file inside the plugin"))
+        self.claude(lambda d: d.update(commands=["./../outside.md"]))
+        self.assertTrue(self.has("must be an existing file inside the plugin"))
 
     def test_mcp_nested_config_rejected(self):
         (self.root / "skills/testing/.mcp.json").write_text("{}")

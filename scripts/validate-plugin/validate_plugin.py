@@ -21,6 +21,11 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parents[1] / "scripts" / "project-context"))
 from project_context.secrets import find_secrets  # noqa: E402
 
+
+def inside(root: Path, candidate: Path) -> bool:
+    c = candidate.resolve(strict=False)
+    return c == root.resolve() or root.resolve() in c.parents
+
 SCHEMA = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json"
 ALLOWED = {"$schema", "name", "version", "description", "author", "homepage", "repository", "license", "keywords", "extensions"}
 AUTHOR_ALLOWED = {"name", "email", "url"}
@@ -166,6 +171,9 @@ def _check_mcp(root: Path, name, manifest: dict, fail) -> None:
         for k in ("name", "version"):
             if c.get(k) != manifest.get(k):
                 fail(f".claude-plugin/plugin.json: {k} must equal plugin.json")
+        for cmd in ([c["commands"]] if isinstance(c.get("commands"), str) else c.get("commands", [])):
+            if not isinstance(cmd, str) or not cmd.startswith("./") or not inside(root, root / cmd) or not (root / cmd).is_file():
+                fail(f".claude-plugin/plugin.json: commands entry {cmd!r} must be an existing file inside the plugin")
         ms = c.get("mcpServers")
         parts = ms if isinstance(ms, list) else ([ms] if ms is not None else [])
         if mcp.is_file() and "./mcp.json" not in parts:

@@ -102,7 +102,7 @@ A workflow uses project context at the stages where it changes the work. For exa
 
 ### Commands
 
-Commands remain thin. They do not read or interpret project context. The agent or workflow they lead to does.
+Commands remain thin. They do not read or interpret project context, and the agent or workflow they lead to does. The one exception is `/context`, whose purpose is to generate, inspect and check the context itself. It runs the existing generator and drift detector, and does not use the context to do other work.
 
 ## Example
 
@@ -153,6 +153,17 @@ In practice:
 - **User instruction versus context:** the user's instruction for this task is followed. If it conflicts with a constraint, the conflict is surfaced before proceeding.
 
 Conflicts are reported and not silently resolved.
+
+## Ownership: the Consuming Repository
+
+A project context describes one repository, so it belongs to that repository. The Hub provides the capability to generate, inspect and check it, and never stores a consuming repository's context (the Hub's own repository has none).
+
+```
+AI Engineering Hub  ─► available to ─►  stardom-riskmanagement-backend  ─►  /context generate
+                                                                            ─► stardom-riskmanagement-backend/PROJECT-CONTEXT.md
+```
+
+The commands are `/context generate`, `/context inspect` and `/context drift` (see [Commands](commands.md#context-generate-inspect-drift)). They always target the repository of the current working directory, never the Hub, and use the generator described below.
 
 ## Generating and Updating Context
 
