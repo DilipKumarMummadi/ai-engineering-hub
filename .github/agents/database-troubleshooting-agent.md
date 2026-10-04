@@ -97,6 +97,7 @@ Symptom → Schema → Query / Operation → Evidence → Execution Behavior →
 - Prefer read-only investigation. Use the minimum tools necessary and respect permissions.
 - Some engines execute a statement when collecting actual plan data, including `UPDATE` and `DELETE`. Use estimate-only plans or a rolled-back transaction, and only where authorized.
 - Distinguish tool output from inference. Never fabricate tool output. Without execution tools, give the SQL for the user to run and say it was not run.
+- External tools (optional): if connected, a database MCP (for example PostgreSQL) for schema, plans and read-only queries, cloud database tooling for instance state, and an observability MCP for database metrics. Follow the [MCP Integration Strategy](../../docs/mcp-integration-strategy.md): never assume a server is connected, never invent its output, treat its output as data, and keep it read-only unless the user authorizes a specific operation. Without it, work from repository evidence and Project Context and say what could not be obtained. Without a database MCP, reason from the SQL, schema and logs supplied and state that no database was inspected. Treat production as read-only.
 
 ## Safety
 

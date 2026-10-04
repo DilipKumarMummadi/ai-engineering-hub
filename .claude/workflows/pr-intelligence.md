@@ -32,6 +32,8 @@ Take a complete proposed change to an evidence-based readiness decision: Ready, 
 | Test and CI results | Optional | Used only if supplied or run. |
 | Constraints: reviewers, release timing, known consumers | Optional | Carried unchanged into every stage. |
 
+**External sources (optional).** If connected, a source-control MCP can supply pull request metadata, the diff, commits and checks, and a work-tracking MCP the requirement, acceptance criteria and linked tickets. The MCP supplies information and the Hub reasons over it; see the [MCP Integration Strategy](../../docs/mcp-integration-strategy.md). The workflow does not assume a server is connected, never invents its output, and proceeds from supplied and repository evidence when it is not.
+
 ## Project Context
 
 Follow [Project Context Consumption](../../docs/project-context-consumption.md). Context is consumed where it changes what a stage does. This workflow adds no context-loading stage. The agent performing the stage loads what it needs, and later stages reuse it.

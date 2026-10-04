@@ -35,6 +35,8 @@ Take a new feature from a stated requirement to a validated, reviewable change. 
 
 Missing inputs are identified and asked about, not invented. The workflow proceeds with what can be done safely.
 
+**External sources (optional).** If connected, a work-tracking MCP (for example Jira) can supply requirements and acceptance criteria, and a source-control MCP (for example GitHub) can supply existing code and related pull requests. The MCP supplies information and the Hub reasons over it; see the [MCP Integration Strategy](../../docs/mcp-integration-strategy.md). The workflow does not assume a server is connected, never invents its output, and proceeds from supplied and repository evidence when it is not.
+
 ## Project Context
 
 Follow [Project Context Consumption](../../docs/project-context-consumption.md). Context is consumed where it changes what a stage does. This workflow adds no context-loading stage. The agent performing the stage loads what it needs, and later stages reuse it.

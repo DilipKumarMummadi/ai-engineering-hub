@@ -33,6 +33,7 @@ Whether the package is a valid, minimal, safe plugin and the existing Hub is unh
 | [missing-skill](cases/missing-skill.md) | A skill directory loses its `SKILL.md`, and another drifts from its source. |
 | [invalid-path](cases/invalid-path.md) | A skill links outside `skills/`, or a stray file sits in `skills/`. |
 | [secret-in-package](cases/secret-in-package.md) | A credential-like string is added to a packaged file. |
-| [repository-context-excluded](cases/repository-context-excluded.md) | A repository-specific `PROJECT-CONTEXT.md` and an `mcp.json` appear in the package. |
+| [repository-context-excluded](cases/repository-context-excluded.md) | A repository-specific `PROJECT-CONTEXT.md` appears in the package, and a nested MCP configuration file appears. |
 | [client-specific-content](cases/client-specific-content.md) | Client-specific resources are kept apart from the portable core. |
+| [mcp-configuration](cases/mcp-configuration.md) | The root `mcp.json` configures existing servers and carries no credential. |
 | [backward-compatibility](cases/backward-compatibility.md) | The existing Hub still works after packaging. |

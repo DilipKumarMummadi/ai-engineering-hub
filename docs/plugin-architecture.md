@@ -24,11 +24,13 @@ AI Client                       (Claude Code, GitHub Copilot, other Agent Plugin
 
 | | Plugin | MCP |
 | --- | --- | --- |
-| Role | Packaging and distribution layer | Tool and integration layer |
-| Delivers | Skills (instructions), client extensions, metadata | Callable tools, resources and servers |
-| Status | This step | Future step. No `mcp.json`, server, tools or transport exist in this package. |
+| Role | Packaging and distribution of Hub capabilities | Access to external systems and tools |
+| Delivers | Skills (instructions), client extensions, metadata | Callable tools and resources from servers that already exist |
+| Owned by | The Hub | The server's maintainer; connected by the user in their client |
 
-The plugin stays valid without MCP. MCP, when added, will be a separate, additive file.
+The plugin packages the Hub's engineering capabilities. It bundles **no MCP server implementation and no credentials**. Its root `mcp.json` is static configuration only: it names six existing servers (GitHub read-only, Atlassian for Jira, Figma, Postgres read-only, Playwright, Grafana with writes disabled) and carries no `env`, `headers` or secret, which the validator enforces. `plugin.json` has no `mcpServers` or `userConfig`, because Agent Plugins 1.0.0 forbids inline MCP configuration and defines no portable user-secret mechanism.
+
+Who authenticates, and to which database or endpoint, is runtime configuration supplied by the client or the user's environment; see [MCP Runtime Configuration](mcp-runtime-configuration.md), the [MCP Registry](mcp-registry.md) and the [client pages](mcp-clients/README.md). Claude Code loads the file through `.claude-plugin/plugin.json`, which also carries a Claude Code-only token prompt for GitHub. The Hub works without any server connected, and the plugin and MCP are complementary: the plugin distributes capabilities, MCP provides access.
 
 ## Package Contents
 
@@ -36,6 +38,8 @@ The plugin stays valid without MCP. MCP, when added, will be a separate, additiv
 | --- | --- | --- |
 | `plugin.json` | Portable | Manifest. Core fields only; no `extensions` entry. |
 | `README.md` | Portable | Package documentation. |
+| `mcp.json` | Portable | Static definitions of existing MCP servers. No credentials, `env`, `headers` or server code. |
+| `.claude-plugin/` | Client-specific (Claude Code) | `marketplace.json` for installation, and `plugin.json` that points Claude Code at `mcp.json`. |
 | `skills/<name>/SKILL.md` | Portable | 13 generic engineering skills, discovered by the client from `skills/`. |
 | `com.github.copilot/` | Client-specific | Copilot namespace. Documents the Copilot resources; holds no copied logic. |
 | `docs/` | Documentation | Specifications and this file. Skills link only to sibling skills and never to `docs/`. |
@@ -77,4 +81,4 @@ A `PROJECT-CONTEXT.md` describes one repository. It is generated in, and stays i
 
 ## Validation
 
-`python3 scripts/validate-plugin/validate_plugin.py` checks the manifest (canonical schema URL, permitted fields, name, version), the `skills/` layout and its agreement with the source, link containment, required docs, forbidden content (evals, scripts, fixtures, secrets, `PROJECT-CONTEXT.md`, `mcp.json`). Tests: `python3 scripts/validate-plugin/test_validate_plugin.py`. Evaluation cases: [`evals/plugin-packaging/`](../evals/plugin-packaging/README.md).
+`python3 scripts/validate-plugin/validate_plugin.py` checks the manifest (canonical schema URL, permitted fields, name, version), the `skills/` layout and its agreement with the source, link containment, required docs, `mcp.json` (schema, server types, no `env`, `headers` or credentials, Claude bridge consistency), forbidden content (evals, scripts, fixtures, secrets, `PROJECT-CONTEXT.md`, stray MCP config). Tests: `python3 scripts/validate-plugin/test_validate_plugin.py`. Evaluation cases: [`evals/plugin-packaging/`](../evals/plugin-packaging/README.md).

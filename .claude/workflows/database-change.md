@@ -35,6 +35,8 @@ Deliver a database change safely: understand the current schema and data, design
 
 Unknown volumes or usage are reported as unknown. No row counts, plans or timings are invented.
 
+**External sources (optional).** If connected, a database MCP (for example PostgreSQL) can supply schema and read-only evidence, against non-production environments only unless the user authorizes otherwise. The MCP supplies information and the Hub reasons over it; see the [MCP Integration Strategy](../../docs/mcp-integration-strategy.md). The workflow does not assume a server is connected, never invents its output, and proceeds from supplied and repository evidence when it is not. Without one, reason from supplied SQL, schema and logs and state that no database was inspected. Production is read-only unless the user explicitly authorizes otherwise.
+
 ## Project Context
 
 Follow [Project Context Consumption](../../docs/project-context-consumption.md). Context is consumed where it changes what a stage does. This workflow adds no context-loading stage. The agent performing the stage loads what it needs, and later stages reuse it.

@@ -34,6 +34,8 @@ Resolve a defect by moving from symptom to evidence to a confirmed root cause, t
 
 Missing evidence is listed, not invented.
 
+**External sources (optional).** If connected, a work-tracking MCP can supply the bug report, a source-control MCP recent changes, an observability MCP (for example Grafana) logs and metrics, and a database MCP read-only evidence. The MCP supplies information and the Hub reasons over it; see the [MCP Integration Strategy](../../docs/mcp-integration-strategy.md). The workflow does not assume a server is connected, never invents its output, and proceeds from supplied and repository evidence when it is not.
+
 ## Project Context
 
 Follow [Project Context Consumption](../../docs/project-context-consumption.md). Context is consumed where it changes what a stage does. This workflow adds no context-loading stage. The agent performing the stage loads what it needs, and later stages reuse it.

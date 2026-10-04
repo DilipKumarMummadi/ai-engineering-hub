@@ -33,6 +33,8 @@ Guide the response to a production incident so that impact is understood first, 
 
 Urgency does not justify invented evidence. Gaps are recorded as open questions.
 
+**External sources (optional).** If connected, an observability MCP (for example Grafana) can supply metrics, logs and alerts, a work-tracking MCP the incident ticket, a source-control MCP recent changes, and cloud or platform MCPs resource state. The MCP supplies information and the Hub reasons over it; see the [MCP Integration Strategy](../../docs/mcp-integration-strategy.md). The workflow does not assume a server is connected, never invents its output, and proceeds from supplied and repository evidence when it is not.
+
 ## Project Context
 
 Follow [Project Context Consumption](../../docs/project-context-consumption.md). Context is consumed where it changes what a stage does. This workflow adds no context-loading stage. The agent performing the stage loads what it needs, and later stages reuse it.

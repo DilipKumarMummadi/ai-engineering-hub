@@ -20,6 +20,8 @@ ai-engineering-hub/
 ├── plugin.json              # Agent Plugins 1.0.0 manifest (core fields only)
 ├── README.md
 ├── skills/<name>/SKILL.md   # portable skills (copy of .claude/skills, validator-enforced)
+├── mcp.json                 # existing MCP servers to connect (no credentials)
+├── .claude-plugin/          # Claude Code install + MCP bridge
 ├── com.github.copilot/      # Copilot namespace (documentation only for now)
 ├── docs/                    # specifications, including plugin-architecture.md
 ├── .claude/  .github/       # native Claude Code / Copilot resources (unchanged)
@@ -39,7 +41,7 @@ See [Plugin Architecture](docs/plugin-architecture.md) and the general [Architec
 
 ## Security Model
 
-Skills are instructions only; the package ships no executable code, credentials or MCP servers. The validator rejects secret-like content, `PROJECT-CONTEXT.md`, evals and scripts in packaged directories. Agents are read-only or recommend-only by design.
+Skills are instructions only; the package ships no executable code or credentials, and no MCP server implementation. `mcp.json` only holds static definitions of existing servers (GitHub, Atlassian/Jira, Figma, Postgres, Playwright, Grafana) with no `env`, `headers` or credentials, and the validator rejects anything secret-like, `PROJECT-CONTEXT.md`, evals and scripts in packaged directories. Agents are read-only or recommend-only by design.
 
 ## Limitations
 
@@ -47,7 +49,7 @@ Skills are instructions only; the package ships no executable code, credentials 
 - `skills/` is a generated copy of `.claude/skills/`; run `python3 scripts/validate-plugin/validate_plugin.py --sync` after editing skills.
 - Installing from the repository clones development tooling too; the manifest only exposes `skills/`.
 - No `license` field or LICENSE file yet; one must be chosen by the owner.
-- MCP integration is not implemented.
+- MCP: the plugin names six existing servers but holds no credentials; you authenticate and supply team or environment connections in your own client. Only listing and loading were tested, not authenticated calls. See [MCP Registry](docs/mcp-registry.md), [Runtime Configuration](docs/mcp-runtime-configuration.md) and [MCP Clients](docs/mcp-clients/README.md).
 
 ## Validation
 
@@ -59,4 +61,4 @@ python3 scripts/validate-hub/validate_hub.py
 
 ## Documentation
 
-[Architecture](docs/architecture.md) · [Plugin Architecture](docs/plugin-architecture.md) · [Skills](docs/skills.md) · [Agents](docs/agents.md) · [Workflows](docs/workflows.md) · [Contributing](CONTRIBUTING.md) · [Changelog](CHANGELOG.md)
+[Architecture](docs/architecture.md) · [Plugin Architecture](docs/plugin-architecture.md) · [MCP Integration](docs/mcp-integration-strategy.md) · [MCP Registry](docs/mcp-registry.md) · [MCP Clients](docs/mcp-clients/README.md) · [Skills](docs/skills.md) · [Agents](docs/agents.md) · [Workflows](docs/workflows.md) · [Contributing](CONTRIBUTING.md) · [Changelog](CHANGELOG.md)

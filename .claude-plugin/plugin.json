@@ -1,0 +1,30 @@
+{
+  "name": "ai-engineering-hub",
+  "version": "1.0.0",
+  "description": "Reusable AI engineering skills for software development: code review, debugging, testing, architecture, API, database, security, performance, observability, reliability and change intelligence.",
+  "author": {
+    "name": "Dilip Kumar Mummadi"
+  },
+  "homepage": "https://github.com/DilipKumarMummadi/ai-engineering-hub",
+  "repository": "https://github.com/DilipKumarMummadi/ai-engineering-hub",
+  "mcpServers": [
+    "./mcp.json",
+    {
+      "github": {
+        "type": "streamable-http",
+        "url": "https://api.githubcopilot.com/mcp/readonly",
+        "headers": {
+          "Authorization": "Bearer ${user_config.github_token}"
+        }
+      }
+    }
+  ],
+  "userConfig": {
+    "github_token": {
+      "type": "string",
+      "title": "GitHub token (optional)",
+      "description": "Optional. Token for the read-only GitHub MCP server, used only by Claude Code. Leave empty to skip GitHub. Stored in your system credential store, never in the repository.",
+      "sensitive": true
+    }
+  }
+}

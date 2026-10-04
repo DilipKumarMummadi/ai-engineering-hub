@@ -29,8 +29,12 @@ SEMVER_RE = re.compile(r"^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?
 SOURCE = ".claude/skills"
 # Directories that are part of the distributable package. Everything else at the repo root is Hub development tooling.
 PACKAGED = ("skills", "com.github.copilot")
-FORBIDDEN_NAMES = {"mcp.json", "PROJECT-CONTEXT.md", ".env", "node_modules", ".git", "coverage", "dist", "build", "__pycache__"}
+FORBIDDEN_NAMES = {"PROJECT-CONTEXT.md", ".env", "node_modules", ".git", "coverage", "dist", "build", "__pycache__"}
 FORBIDDEN_PARTS = {"evals", "fixtures", "scripts"}
+MCP_SCHEMA = "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json"
+MCP_TYPES = {"stdio", "streamable-http", "sse"}
+# Portable mcp.json is static definitions only. Credentials and connection details come from the client at runtime,
+# so the file may not carry `headers` or `env` at all. (Client-specific wiring lives in .claude-plugin/plugin.json.)
 FORBIDDEN_SUFFIX = (".pem", ".key", ".pfx", ".p12", ".log", ".pyc")
 
 
@@ -78,6 +82,8 @@ def validate(root: Path) -> list[str]:
             fail(f".claude-plugin/marketplace.json: must list plugin {name!r} with source './'")
     except (OSError, ValueError, AttributeError):
         fail(".claude-plugin/marketplace.json: missing or invalid (Claude Code cannot install the plugin without it)")
+
+    _check_mcp(root, name, data, fail)
 
     # 6-7: skills layout and source agreement
     skills_dir = root / "skills"
@@ -127,7 +133,8 @@ def validate(root: Path) -> list[str]:
                 fail(f"skills/{n}: link {link} must resolve inside skills/")
 
     # 9-12/16: forbidden content inside the packaged directories and at the package root
-    packaged = [root / "plugin.json", root / "README.md"]
+    packaged = [root / "plugin.json", root / "README.md", root / "mcp.json", *(root / ".claude-plugin").glob("*.json")]
+    packaged = [f for f in packaged if f.is_file()]
     for d in PACKAGED:
         if (root / d).is_dir():
             packaged += [f for f in (root / d).rglob("*") if f.is_file()]
@@ -138,13 +145,76 @@ def validate(root: Path) -> list[str]:
         if f.suffix in (".md", ".json") and find_secrets(f.read_text(encoding="utf-8")):
             fail(f"{rel}: secret-like content")
     # exact-name match: rglob is case-insensitive on macOS and would hit docs/project-context.md
-    for p in (x for x in root.rglob("*") if x.name == "mcp.json"):
+    for p in (x for x in root.rglob("*") if x.name in ("mcp.json", ".mcp.json") and x != root / "mcp.json"):
         if ".git" not in p.parts:
-            fail(f"{p.relative_to(root)}: MCP is out of scope for this package")
+            fail(f"{p.relative_to(root)}: MCP configuration belongs only in the root mcp.json")
     for p in (x for x in root.rglob("*") if x.name == "PROJECT-CONTEXT.md"):
         if "templates" not in p.relative_to(root).parts and "fixtures" not in p.parts and ".git" not in p.parts:
             fail(f"{p.relative_to(root)}: repository-specific context must not be committed to the Hub package")
     return errors
+
+
+def _check_mcp(root: Path, name, manifest: dict, fail) -> None:
+    """mcp.json is optional. When present it must follow Agent Plugins 1.0.0 and carry no credential values."""
+    claude = root / ".claude-plugin" / "plugin.json"
+    mcp = root / "mcp.json"
+    if claude.is_file():
+        try:
+            c = json.loads(claude.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            return fail(".claude-plugin/plugin.json: invalid JSON")
+        for k in ("name", "version"):
+            if c.get(k) != manifest.get(k):
+                fail(f".claude-plugin/plugin.json: {k} must equal plugin.json")
+        ms = c.get("mcpServers")
+        parts = ms if isinstance(ms, list) else ([ms] if ms is not None else [])
+        if mcp.is_file() and "./mcp.json" not in parts:
+            fail(".claude-plugin/plugin.json: mcpServers must include './mcp.json' so Claude Code loads the servers")
+        for part in parts:
+            if isinstance(part, dict):  # Claude-specific per-server override, e.g. a prompted token
+                base = json.loads(mcp.read_text(encoding="utf-8")).get("mcpServers", {}) if mcp.is_file() else {}
+                declared = set(c.get("userConfig", {}))
+                for sname, s in part.items():
+                    if sname not in base or s.get("url") != base[sname].get("url") or s.get("type") != base[sname].get("type"):
+                        fail(f".claude-plugin/plugin.json: override '{sname}' must match a server in mcp.json (same type and url)")
+                    for h, v in (s.get("headers") or {}).items():
+                        m = re.fullmatch(r"(?:(?:Bearer|Basic) )?\$\{user_config\.([A-Za-z_][A-Za-z0-9_]*)\}", v) if isinstance(v, str) else None
+                        if not m or m.group(1) not in declared or not c["userConfig"][m.group(1)].get("sensitive"):
+                            fail(f".claude-plugin/plugin.json: override '{sname}' header '{h}' must be a ${{user_config.KEY}} of a sensitive userConfig option")
+            elif part != "./mcp.json":
+                fail(".claude-plugin/plugin.json: mcpServers entries must be './mcp.json' or a per-server override object")
+    elif mcp.is_file():
+        fail(".claude-plugin/plugin.json: missing; Claude Code would not load mcp.json")
+    if not mcp.is_file():
+        return
+    try:
+        d = json.loads(mcp.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as e:
+        return fail(f"mcp.json: invalid JSON ({e})")
+    if not isinstance(d, dict) or set(d) != {"$schema", "mcpServers"} or d.get("$schema") != MCP_SCHEMA or not isinstance(d["mcpServers"], dict):
+        return fail(f"mcp.json: must contain exactly $schema ({MCP_SCHEMA}) and mcpServers")
+    for sname, s in d["mcpServers"].items():
+        where = f"mcp.json: server '{sname}'"
+        if not isinstance(s, dict) or s.get("type") not in MCP_TYPES:
+            fail(f"{where} needs a type of {sorted(MCP_TYPES)}")
+            continue
+        allowed = {"stdio": {"type", "command", "args", "cwd"}}.get(s["type"], {"type", "url"})
+        for k in set(s) - allowed:
+            why = "runtime configuration belongs to the client, not the portable file" if k in ("env", "headers") else f"not valid for type {s['type']}"
+            fail(f"{where}: field '{k}' is not allowed ({why})")
+        if s["type"] == "stdio":
+            cmd = s.get("command")
+            if not isinstance(cmd, str) or not cmd or re.search(r"\s", cmd):
+                fail(f"{where}: command must be a single executable token")
+            values = list(s.get("args", []))
+        else:
+            url = s.get("url", "")
+            if not isinstance(url, str) or not url.startswith("https://") or "@" in url.split("/")[2] or re.search(r"(?i)[?&](token|key|secret|password|api_?key)=", url):
+                fail(f"{where}: url must be https with no embedded credentials")
+            values = []
+        for v in values:
+            if isinstance(v, str) and (find_secrets(v) or re.search(r"(?i)postgres(ql)?://[^\s$]*:[^\s$@]+@", v)):
+                fail(f"{where}: secret-like value; credentials must never be in the portable file")
 
 
 def sync(root: Path) -> None:

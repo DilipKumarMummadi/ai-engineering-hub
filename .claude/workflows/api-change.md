@@ -34,6 +34,8 @@ Deliver an API addition or change with a deliberate contract, a compatibility de
 
 Unknown consumers are reported as unknown, not assumed to be absent.
 
+**External sources (optional).** If connected, a source-control MCP can help find consumers and related changes, and a work-tracking MCP can supply requirements. The MCP supplies information and the Hub reasons over it; see the [MCP Integration Strategy](../../docs/mcp-integration-strategy.md). The workflow does not assume a server is connected, never invents its output, and proceeds from supplied and repository evidence when it is not.
+
 ## Project Context
 
 Follow [Project Context Consumption](../../docs/project-context-consumption.md). Context is consumed where it changes what a stage does. This workflow adds no context-loading stage. The agent performing the stage loads what it needs, and later stages reuse it.

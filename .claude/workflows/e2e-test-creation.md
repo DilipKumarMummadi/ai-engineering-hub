@@ -32,6 +32,8 @@ Produce an end-to-end test that earns its cost: it covers a flow that needs a re
 | Test data availability and reset method | Preferred | |
 | Constraints: environments, browsers, CI limits | Optional | Carried unchanged into every stage. |
 
+**External sources (optional).** If connected, a browser MCP (for example Playwright) can drive and inspect the running application, and a work-tracking MCP can supply the flow to cover. The MCP supplies information and the Hub reasons over it; see the [MCP Integration Strategy](../../docs/mcp-integration-strategy.md). The workflow does not assume a server is connected, never invents its output, and proceeds from supplied and repository evidence when it is not. Without one, generate the plan and test code and do not claim browser validation occurred.
+
 ## Project Context
 
 Follow [Project Context Consumption](../../docs/project-context-consumption.md). Context is consumed where it changes what a stage does. This workflow adds no context-loading stage. The agent performing the stage loads what it needs, and later stages reuse it.

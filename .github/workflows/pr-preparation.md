@@ -31,6 +31,8 @@ Take a completed change to a reviewable, honestly described PR. The workflow app
 | PR template and conventions | Gathered | From the repository. |
 | Constraints: reviewers, scope, release timing | Optional | Carried unchanged into every stage. |
 
+**External sources (optional).** If connected, a source-control MCP can supply the pull request and diff, and a work-tracking MCP the requirement. The MCP supplies information and the Hub reasons over it; see the [MCP Integration Strategy](../../docs/mcp-integration-strategy.md). The workflow does not assume a server is connected, never invents its output, and proceeds from supplied and repository evidence when it is not.
+
 ## Project Context
 
 Follow [Project Context Consumption](../../docs/project-context-consumption.md). Context is consumed where it changes what a stage does. This workflow adds no context-loading stage. The agent performing the stage loads what it needs, and later stages reuse it.
