@@ -110,6 +110,10 @@ A workflow defines stage validation, final validation, evidence requirements, te
 
 A workflow is never reported as completed unless its required stages actually completed. Tests, builds and migrations are not reported as passing unless they ran and the output was seen. Skipped, blocked and failed stages are reported as such.
 
+## External Capabilities
+
+Workflows may use capabilities when a provider is connected, and continue without them when not. The feature-development, bug-fix, api-change, database-change and pr-preparation workflows can use `requirements-tracking`; e2e-test-creation can use `browser-automation`; production-incident can use `database` and `cloud-platform`. A missing provider never fails a workflow: the limitation is reported. Flow: User → Command/Workflow → Agent → Skill → Capability → Existing MCP provider → External system. See the [MCP Capability Registry](mcp-capability-registry.md).
+
 ## Location
 
 | Platform | Location |

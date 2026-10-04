@@ -6,7 +6,7 @@ Status legend: **Tested**, **Documented**, **Not tested** (see [MCP Clients](REA
 
 Claude Code reads a plugin's MCP configuration through its own manifest. `.claude-plugin/plugin.json` sets `mcpServers` to `["./mcp.json", { "github": … }]`: the portable file first, then a Claude Code-only override of `github`. The servers appear as `plugin:ai-engineering-hub:<name>`.
 
-- Six servers listed, with Atlassian reaching `needs-auth`: **Tested**.
+- Servers listed, with Atlassian reaching `needs-auth`: **Tested**.
 - `claude plugin validate` passes on the manifest: **Tested**.
 - A server name declared later replaces an earlier one: **Documented**.
 
@@ -17,7 +17,6 @@ Claude Code reads a plugin's MCP configuration through its own manifest. `.claud
 | Atlassian (Jira), Figma | Run `/mcp`, choose the server, sign in in the browser. Claude Code refreshes the token itself | Atlassian reaches `needs-auth`: **Tested**. Completing sign-in: **Not tested** |
 | GitHub | Enter a token when Claude Code asks on enable (see below) | Manifest and load: **Tested**. The prompt and an authenticated call: **Not tested** |
 | PostgreSQL | Export the connection in the shell that starts Claude Code | `failed` while `DATABASE_URI` is unset: **Tested**. Working with it set, and a live database: **Not tested** |
-| Grafana | Export `GRAFANA_URL` and `GRAFANA_SERVICE_ACCOUNT_TOKEN` | Loads: **Tested**. Live Grafana: **Not tested** |
 | Playwright | Install Node.js | Loads: **Tested**. Driving a browser: **Not tested** |
 
 ### GitHub token (Claude Code-specific)

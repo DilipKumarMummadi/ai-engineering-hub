@@ -65,7 +65,7 @@ The agent retrieves the PR through the `source-control` capability, uses the rep
 
 ## Security Model
 
-Skills are instructions only; the package ships no executable code or credentials, and no MCP server implementation. `mcp.json` only holds static definitions of existing servers (GitHub, Atlassian/Jira, Figma, Postgres, Playwright, Grafana) with no `env`, `headers` or credentials, and the validator rejects anything secret-like, `PROJECT-CONTEXT.md`, evals and scripts in packaged directories. Agents are read-only or recommend-only by design.
+Skills are instructions only; the package ships no executable code or credentials, and no MCP server implementation. `mcp.json` only holds static definitions of existing servers (GitHub, Atlassian/Jira, Figma, Postgres, Playwright) with no `env`, `headers` or credentials, and the validator rejects anything secret-like, `PROJECT-CONTEXT.md`, evals and scripts in packaged directories. Agents are read-only or recommend-only by design.
 
 ## Limitations
 
@@ -73,7 +73,7 @@ Skills are instructions only; the package ships no executable code or credential
 - `skills/` is a generated copy of `.claude/skills/`; run `python3 scripts/validate-plugin/validate_plugin.py --sync` after editing skills.
 - Installing from the repository clones development tooling too; the manifest only exposes `skills/`.
 - No `license` field or LICENSE file yet; one must be chosen by the owner.
-- MCP: the plugin names six existing servers but holds no credentials; you authenticate and supply team or environment connections in your own client. Only listing and loading were tested, not authenticated calls. See [MCP Registry](docs/mcp-registry.md), [Runtime Configuration](docs/mcp-runtime-configuration.md) and [MCP Clients](docs/mcp-clients/README.md).
+- MCP: the plugin names five existing servers but holds no credentials; you authenticate and supply team or environment connections in your own client. Only listing and loading were tested, not authenticated calls. See [MCP Registry](docs/mcp-registry.md), [Runtime Configuration](docs/mcp-runtime-configuration.md) and [MCP Clients](docs/mcp-clients/README.md).
 
 ## Validation
 
@@ -85,4 +85,4 @@ python3 scripts/validate-hub/validate_hub.py
 
 ## Documentation
 
-[Architecture](docs/architecture.md) · [Plugin Architecture](docs/plugin-architecture.md) · [MCP Integration](docs/mcp-integration-strategy.md) · [MCP Registry](docs/mcp-registry.md) · [MCP Capabilities](docs/mcp-capability-registry.md) · [MCP Clients](docs/mcp-clients/README.md) · [Skills](docs/skills.md) · [Agents](docs/agents.md) · [Workflows](docs/workflows.md) · [Contributing](CONTRIBUTING.md) · [Changelog](CHANGELOG.md)
+[Architecture](docs/architecture.md) · [Plugin Architecture](docs/plugin-architecture.md) · [MCP Integration](docs/mcp-integration-strategy.md) · [MCP Registry](docs/mcp-registry.md) · [MCP Capabilities](docs/mcp-capability-registry.md) · [MCP Setup Guide](docs/mcp-setup-guide.md) · [MCP Clients](docs/mcp-clients/README.md) · [Skills](docs/skills.md) · [Agents](docs/agents.md) · [Workflows](docs/workflows.md) · [Contributing](CONTRIBUTING.md) · [Changelog](CHANGELOG.md)

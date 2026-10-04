@@ -4,7 +4,7 @@ Status legend: **Tested**, **Documented**, **Not tested** (see [MCP Clients](REA
 
 ## How the plugin's servers load
 
-Copilot CLI reads the plugin's root `mcp.json` directly. `copilot mcp list` shows all six servers under "Plugin servers": **Tested**. Project-level configuration is `.mcp.json` or `.github/mcp.json`, and user-level configuration is `~/.copilot/mcp-config.json`: **Documented**.
+Copilot CLI reads the plugin's root `mcp.json` directly. `copilot mcp list` shows the plugin's servers under "Plugin servers": **Tested**. Project-level configuration is `.mcp.json` or `.github/mcp.json`, and user-level configuration is `~/.copilot/mcp-config.json`: **Documented**.
 
 ## Per-server runtime configuration
 
@@ -13,7 +13,6 @@ Copilot CLI reads the plugin's root `mcp.json` directly. `copilot mcp list` show
 | GitHub | Use Copilot CLI's **built-in GitHub MCP server**, which needs no configuration. The plugin's `github` entry has no credentials in it; if it shows as failing, disable it with `copilot mcp disable github` | Built-in server: **Documented**. Behavior of the plugin's entry when unauthenticated, and disabling it: **Not tested** |
 | Atlassian (Jira), Figma | Remote servers. The Copilot CLI documentation does not describe OAuth for remote servers, so sign-in may not be available | **Not tested** |
 | PostgreSQL | Define the connection in your user-level `~/.copilot/mcp-config.json` (see below) | **Not tested** against a database |
-| Grafana | Same approach for `GRAFANA_URL` and the token | **Not tested** |
 | Playwright | Install Node.js | Listed: **Tested**. Driving a browser: **Not tested** |
 
 ### Local servers do not inherit your shell environment

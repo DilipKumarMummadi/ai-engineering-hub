@@ -16,10 +16,10 @@ The unmodified package passes. Each change is rejected with a message naming the
 
 # Important Checks
 
-- Only the six intended servers are configured; GitHub and Postgres are read-only, Grafana has writes disabled, and npx/uvx packages are version-pinned.
+- Only the five intended servers are configured (GitHub, Atlassian, Figma, Postgres, Playwright); GitHub and Postgres are read-only, and npx/uvx packages are version-pinned. No observability MCP is configured; it is deferred to a later phase.
 - The portable `mcp.json` has no `env` or `headers`; runtime configuration is documented per client.
 - No credential value appears anywhere in the package.
-- `plugin.json` has no `mcpServers` or `userConfig`; Claude Code reaches `mcp.json` through `.claude-plugin/plugin.json`, where any token comes from a sensitive prompted option.
+- `plugin.json` has no `mcpServers` or `userConfig`; Claude Code reaches `mcp.json` through `.claude-plugin/plugin.json`, where the only token is the documented Claude Code-only sensitive `github_token` option, never present in the root `plugin.json` or `mcp.json`.
 
 # Failure Conditions
 

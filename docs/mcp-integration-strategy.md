@@ -11,7 +11,7 @@ Hub = "What engineering work should be done, and how should it be reasoned about
 MCP = "How do we access the external system or tool that work needs?"
 ```
 
-Existing MCP servers for source control, work tracking, databases, browsers, observability and cloud platforms are maintained by their owners, authenticated by the user's environment, and already understood by MCP clients. Rebuilding them inside the Hub would duplicate functionality, add credentials and attack surface the Hub should not hold, and blur the line between reasoning and access. So the Hub stays an intelligence layer and uses whatever is connected.
+Existing MCP servers for source control, work tracking, databases, browsers and cloud platforms are maintained by their owners, authenticated by the user's environment, and already understood by MCP clients. Rebuilding them inside the Hub would duplicate functionality, add credentials and attack surface the Hub should not hold, and blur the line between reasoning and access. So the Hub stays an intelligence layer and uses whatever is connected.
 
 ## Architecture
 
@@ -24,12 +24,14 @@ Agent
  ↓
 Skill
  ↓
-Project Context + Repository Evidence
+Capability                      (source-control, requirements-tracking, database, browser-automation, cloud-platform)
  ↓
-Existing MCPs, when external access is required
+Existing MCP provider           (GitHub, Jira, PostgreSQL, Playwright, ...)
  ↓
-External engineering systems
+External system
 ```
+
+Project Context and repository evidence are combined with what the provider returns; the capability layer is described in the [MCP Capability Registry](mcp-capability-registry.md).
 
 MCP is an integration mechanism, not another Hub intelligence layer. It supplies information. Skills and agents reason over it. An MCP result is evidence to be weighed, not a conclusion.
 
@@ -42,8 +44,11 @@ MCP is an integration mechanism, not another Hub intelligence layer. It supplies
 | Project Context and its generator | Work-tracking access (tickets, requirements) |
 | Change Intelligence and PR Intelligence | Database access |
 | Validation and evaluation | Browser interaction |
-| Safety and evidence rules | Observability access (metrics, logs, alerts) |
-| | Cloud and platform access |
+| Safety and evidence rules | Cloud and platform access |
+
+## Capabilities and Deferred Scope
+
+Agents name a capability, never a server: `source-control`, `requirements-tracking`, `database`, `browser-automation`, `cloud-platform` (Azure, registered but not bundled). `design` (Figma) remains as an existing non-engineering capability. Observability MCP access is deferred to a later phase; the `observability` skill and incident reasoning over telemetry the user supplies are unchanged. The Hub builds no MCP server, implements no authentication and stores no credentials; the client owns authentication, credentials, OAuth and environment configuration. Setup: [MCP Setup Guide](mcp-setup-guide.md).
 
 ## Example Integrations
 
@@ -55,8 +60,7 @@ Examples only. The Hub does not depend on any specific server, and availability 
 | Requirements and work tracking | Jira | Tickets, acceptance criteria, comments, status, linked items |
 | Database | PostgreSQL | Schema, read-only queries, plans |
 | Browser automation | Playwright | Driving and inspecting a running application |
-| Observability | Grafana | Dashboards, metrics, logs, alerts |
-| Cloud | Azure | Resource state, monitoring, infrastructure configuration |
+| Cloud | Azure (not bundled) | Resource state, monitoring, infrastructure configuration |
 
 ## Usage Rules
 
@@ -101,10 +105,10 @@ Which Hub capabilities may benefit from which external MCPs. Every row works wit
 | Hub workflow / agent | Potentially useful MCPs | Hub capabilities applied |
 | --- | --- | --- |
 | PR Intelligence, PR review | GitHub, Jira | change-intelligence, code-review, testing, security |
-| Bug Investigation | GitHub, Jira, Grafana, database MCP | debugging, observability, database-sql, performance, reliability |
+| Bug Investigation | GitHub, Jira, database MCP, Playwright | debugging, observability, database-sql, performance, reliability |
 | Database Troubleshooting | PostgreSQL, cloud database tooling | database-sql, debugging, performance, reliability |
 | E2E Test Creation, test planning | Playwright, Jira | playwright, testing |
-| Production Incident | Grafana, Jira, GitHub, cloud and platform MCPs | debugging, observability, reliability, performance, security |
+| Production Incident | Jira, GitHub, database MCP, cloud and platform MCPs | debugging, observability, reliability, performance, security |
 | Feature development, API change | Jira, GitHub | architecture, api-development, testing, security |
 | Database change | Database MCP (non-production), cloud | database-sql, reliability, testing |
 
@@ -158,7 +162,7 @@ The Agent Plugin packages Hub capabilities; MCP gives agents access to external 
 
 - **Portable:** `plugin.json` holds metadata only. `mcp.json` (Agent Plugins 1.0.0) holds static definitions of existing servers. Neither contains a credential, `env` or `headers`, and the specification defines no portable secret mechanism, so none is invented.
 - **Runtime:** who is connecting, to which database, with which secret, is supplied by the client, the user's environment or a secret store. See [Runtime Configuration](mcp-runtime-configuration.md).
-- **Client-specific:** anything beyond the specification (for example Claude Code's token prompt) lives in that client's files and is documented on its [client page](mcp-clients/README.md).
+- **Client-specific:** anything beyond the specification lives in that client's files and is documented on its [client page](mcp-clients/README.md). The one such item is Claude Code's `userConfig.github_token` and GitHub `Authorization` header in `.claude-plugin/plugin.json`: a documented exception, not portable, and never in the root `plugin.json` or `mcp.json`.
 
 The Hub bundles no MCP server implementation and runs no proxy to inject configuration. Servers in the [MCP Registry](mcp-registry.md) are maintained by their owners.
 

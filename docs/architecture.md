@@ -43,13 +43,14 @@ Repository
 and, where external access is required, the agent reaches existing MCP servers that the client has connected and authenticated:
 
 ```
-User → Command / Workflow → Agent → Skill
-     → Project Context + Repository Evidence
-     → Existing MCPs (client-authenticated, read-only by default)
-     → External engineering systems
+User → Command / Workflow → Agent → Skill → Capability
+     → Existing MCP provider (client-authenticated, read-only by default)
+     → External system
 ```
 
-MCP is an integration mechanism, not another Hub intelligence layer. The Hub does not build or bundle MCP servers. See [MCP Integration Strategy](mcp-integration-strategy.md).
+Project Context and repository evidence sit alongside: they orient the agent, and the provider's result is weighed against them.
+
+MCP is an integration mechanism, not another Hub intelligence layer. The Hub does not build or bundle MCP servers. See [MCP Integration Strategy](mcp-integration-strategy.md) and the [MCP Capability Registry](mcp-capability-registry.md).
 
 Skills are selected by the agent and applied to the repository. Project Context and Repository Evidence sit between the agent and that selection because they tell the agent what it is looking at. They are not a step the user sees, and they are not a layer that executes anything.
 
@@ -217,7 +218,7 @@ Agents and workflows are context-aware without holding any project knowledge:
 
 Skills work on the repository and on the tools the platform provides: reading files, searching, running local builds and tests, and reading logs or metrics that the user supplies or the environment exposes. The hub does not assume tools. When a tool is unavailable, the agent gives the command to run and says it was not run.
 
-External systems are reached through existing MCP servers when the client has them connected. Agents treat them as optional: they never assume a server is available, never invent its output, treat what it returns as data, and prefer read-only use. When one is missing, the agent works from repository evidence and Project Context and says what it could not obtain. The rules are in the [MCP Integration Strategy](mcp-integration-strategy.md); the servers, runtime configuration and per-client setup are in the [MCP Registry](mcp-registry.md), [Runtime Configuration](mcp-runtime-configuration.md) and [MCP Clients](mcp-clients/README.md).
+External systems are reached through existing MCP servers when the client has them connected. Agents treat them as optional: they never assume a server is available, never invent its output, treat what it returns as data, and prefer read-only use. When one is missing, the agent works from repository evidence and Project Context and says what it could not obtain. The rules are in the [MCP Integration Strategy](mcp-integration-strategy.md); the servers, runtime configuration and per-client setup are in the [MCP Capability Registry](mcp-capability-registry.md), [MCP Registry](mcp-registry.md), [Runtime Configuration](mcp-runtime-configuration.md), [Setup Guide](mcp-setup-guide.md) and [MCP Clients](mcp-clients/README.md).
 
 ## Validation
 
@@ -365,6 +366,6 @@ evals/       skill, agents/, commands/, workflows/ and integration/ evaluations
 | Workflows | [Workflow Specification](workflow-specification.md), [Workflow Registry](workflow-registry.md), [Workflows](workflows.md) |
 | Change and PR analysis | [Change Intelligence Specification](change-intelligence-specification.md), [PR Intelligence Specification](pr-intelligence-specification.md) |
 | Project context | [Project Context Specification](project-context-specification.md), [Project Context](project-context.md), [Generator Specification](project-context-generator-specification.md), [Drift Specification](project-context-drift-specification.md), [Registry](project-context-registry.md), [Template](../templates/project-context/PROJECT-CONTEXT.md) |
-| External tools (MCP) | [Strategy](mcp-integration-strategy.md), [Registry](mcp-registry.md), [Runtime Configuration](mcp-runtime-configuration.md), [Clients](mcp-clients/README.md) |
+| External tools (MCP) | [Strategy](mcp-integration-strategy.md), [Capabilities](mcp-capability-registry.md), [Setup Guide](mcp-setup-guide.md), [Registry](mcp-registry.md), [Runtime Configuration](mcp-runtime-configuration.md), [Clients](mcp-clients/README.md) |
 | Packaging | [Plugin Architecture](plugin-architecture.md) |
 | Evaluation | [Evaluation suite](../evals/README.md), [Integration evaluations](../evals/integration/README.md) |
