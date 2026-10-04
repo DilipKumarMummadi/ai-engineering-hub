@@ -29,7 +29,7 @@
         "command": "sh",
         "args": [
           "-c",
-          "if [ -n \"$HUB_DATABASE_URI\" ]; then export DATABASE_URI=\"$HUB_DATABASE_URI\"; fi; exec uvx postgres-mcp==0.3.0 --access-mode=restricted"
+          "if [ -n \"$HUB_DATABASE_URI\" ]; then export DATABASE_URI=\"$HUB_DATABASE_URI\"; fi; exec uvx --with mcp~=1.0 postgres-mcp==0.3.0 --access-mode=restricted"
         ],
         "env": {
           "HUB_DATABASE_URI": "${user_config.postgres_database_uri}"

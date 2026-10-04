@@ -17,6 +17,8 @@
       "type": "stdio",
       "command": "uvx",
       "args": [
+        "--with",
+        "mcp~=1.0",
         "postgres-mcp==0.3.0",
         "--access-mode=restricted"
       ]
